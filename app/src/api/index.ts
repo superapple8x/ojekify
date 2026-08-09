@@ -2,6 +2,8 @@ import type {
   ApiClient,
   AppNotification,
   ComparisonResult,
+  DisputeReport,
+  DisputeSubmissionInput,
   DueReviewHook,
   KampusKoinEntry,
   KampusKoinState,
@@ -31,6 +33,9 @@ export type {
   CasRules,
   ComparisonResult,
   ComparisonRow,
+  DisputeKind,
+  DisputeReport,
+  DisputeSubmissionInput,
   DueReviewHook,
   ErrandKind,
   FareBand,
@@ -100,6 +105,7 @@ const ORDERS_KEY = 'pilihjek-orders'
 const NOTIFICATIONS_KEY = 'pilihjek-notifications'
 const REVIEWS_KEY = 'pilihjek-reviews'
 const KOIN_KEY = 'pilihjek-koin'
+const DISPUTES_KEY = 'pilihjek-disputes'
 
 // Ulasan jujur = +50 KampusKoin (review.txt §6).
 export const REVIEW_KOIN_REWARD = 50
@@ -205,6 +211,33 @@ export class MockApiClient implements ApiClient {
       notification,
     ])
     return simulateNetwork(submission)
+  }
+
+  reportDispute(input: DisputeSubmissionInput): Promise<DisputeReport> {
+    const report: DisputeReport = {
+      id: `DSP-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      providerId: input.providerId,
+      kind: input.kind,
+      at: Date.now(),
+    }
+    writeStore(DISPUTES_KEY, [...readStore<DisputeReport[]>(DISPUTES_KEY, []), report])
+    const notification: AppNotification = {
+      id: `NOT-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      kind: 'dispute-logged',
+      title: 'Laporan diterima 📮',
+      body: `Kami catat: ${input.providerName} ${input.providerEmoji} — skor keandalannya diturunkan sementara.`,
+      at: Date.now(),
+      read: false,
+    }
+    writeStore(NOTIFICATIONS_KEY, [
+      ...readStore<AppNotification[]>(NOTIFICATIONS_KEY, []),
+      notification,
+    ])
+    return simulateNetwork(report)
+  }
+
+  getDisputes(): Promise<DisputeReport[]> {
+    return simulateNetwork(readStore<DisputeReport[]>(DISPUTES_KEY, []))
   }
 
   getKampusKoin(): Promise<KampusKoinState> {

@@ -209,6 +209,22 @@ export interface KampusKoinState {
   entries: KampusKoinEntry[]
 }
 
+export type DisputeKind = 'ghosted' | 'no-show'
+
+export interface DisputeReport {
+  id: string
+  providerId: string
+  kind: DisputeKind
+  at: number
+}
+
+export interface DisputeSubmissionInput {
+  providerId: string
+  providerName: string
+  providerEmoji: string
+  kind: DisputeKind
+}
+
 export type OrderStatus = 'pending'
 
 export interface OrderItem {
@@ -237,7 +253,7 @@ export interface PlaceOrderInput {
   waUrl: string
 }
 
-export type NotificationKind = 'order-confirmed' | 'review-hook' | 'koin-earned'
+export type NotificationKind = 'order-confirmed' | 'review-hook' | 'koin-earned' | 'dispute-logged'
 
 export interface AppNotification {
   id: string
@@ -266,7 +282,8 @@ export interface ApiClient {
   getLeaderboard(): Promise<LeaderboardEntry[]>
   getLeaderboardWeek(): Promise<string>
   submitReview(input: ReviewSubmissionInput): Promise<ReviewSubmission>
-  getKampusKoin(): Promise<KampusKoinState>
+  reportDispute(input: DisputeSubmissionInput): Promise<DisputeReport>
+  getDisputes(): Promise<DisputeReport[]>
   getQuote(providerId: string, request: QuoteRequest): Promise<Quote | undefined>
   compareQuote(request: QuoteRequest): Promise<ComparisonResult>
   countPdfPages(pdf: PdfDescriptor): Promise<number>
@@ -278,4 +295,5 @@ export interface ApiClient {
   markNotificationsRead(): Promise<void>
   getDueReviewHooks(now: number): Promise<DueReviewHook[]>
   deliverReviewHook(orderId: string): Promise<AppNotification>
+  getKampusKoin(): Promise<KampusKoinState>
 }

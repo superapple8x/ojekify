@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, type Provider, type ProviderReview, type ReviewPillars } from '../api'
 import { ReviewForm } from '../flows/review/ReviewForm'
+import { ReportIssueCard } from '../flows/review/ReportIssueCard'
 import {
   Button,
   Card,
@@ -243,6 +244,8 @@ export default function ProviderProfile() {
       </Card>
 
       <ReviewForm provider={provider} />
+
+      <ReportIssueCard provider={provider} review={review} />
     </div>
   )
 }
