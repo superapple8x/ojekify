@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api, type Provider, type ProviderReview, type ReviewPillars } from '../api'
 import { ReviewForm } from '../flows/review/ReviewForm'
 import { ReportIssueCard } from '../flows/review/ReportIssueCard'
+import { GhostWarningBanner } from '../flows/review/GhostWarningBanner'
 import {
   Button,
   Card,
@@ -100,6 +101,8 @@ export default function ProviderProfile() {
       >
         <span aria-hidden>←</span> Kembali ke hasil banding
       </Link>
+
+      <GhostWarningBanner provider={provider} review={review} />
 
       <Card padding="lg">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
