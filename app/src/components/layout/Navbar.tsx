@@ -35,6 +35,7 @@ export function Navbar() {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === '/'}
               className={({ isActive }) =>
                 cn(
                   'rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors',
@@ -98,6 +99,7 @@ export function Navbar() {
               <li key={item.to}>
                 <NavLink
                   to={item.to}
+                  end={item.to === '/'}
                   onClick={() => setMenuOpen(false)}
                   className={({ isActive }) =>
                     cn(

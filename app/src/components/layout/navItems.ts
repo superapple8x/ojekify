@@ -4,6 +4,7 @@ export interface NavItem {
 }
 
 export const NAV_LINKS: NavItem[] = [
+  { to: '/', label: 'Beranda' },
   { to: '/bandingkan', label: 'Bandingkan' },
   { to: '/cetak', label: 'Cetak & Antar' },
   { to: '/provider', label: 'Provider' },
