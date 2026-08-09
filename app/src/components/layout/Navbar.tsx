@@ -31,7 +31,7 @@ export function Navbar() {
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
         <Brand />
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Navigasi utama">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Navigasi utama">
           {NAV_LINKS.map((item) => (
             <NavLink
               key={item.to}
@@ -52,7 +52,13 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <KampusKoinBadge compact />
+          <Link
+            to="/profil"
+            aria-label="Profil — saldo KampusKoin & voucher"
+            className="transition-transform duration-150 hover:scale-105 active:scale-95"
+          >
+            <KampusKoinBadge compact />
+          </Link>
           <Button
             variant="ghost"
             size="sm"
@@ -75,7 +81,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-10 w-10 rounded-full p-0 md:hidden"
+            className="h-10 w-10 rounded-full p-0 lg:hidden"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? 'Tutup menu' : 'Buka menu'}
             aria-expanded={menuOpen}
@@ -93,7 +99,7 @@ export function Navbar() {
 
       {menuOpen && (
         <nav
-          className="border-t border-neutral-200/70 px-4 pb-4 pt-2 animate-fade-in md:hidden dark:border-neutral-800/70"
+          className="border-t border-neutral-200/70 px-4 pb-4 pt-2 animate-fade-in lg:hidden dark:border-neutral-800/70"
           aria-label="Menu seluler"
         >
           <ul className="space-y-1">

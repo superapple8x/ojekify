@@ -10,6 +10,7 @@ const Comparator = lazy(() => import('./pages/Comparator'))
 const Print = lazy(() => import('./pages/Print'))
 const ProviderProfile = lazy(() => import('./pages/ProviderProfile'))
 const Orders = lazy(() => import('./pages/Orders'))
+const Profile = lazy(() => import('./pages/Profile'))
 
 function lazyPageFallback() {
   return (
@@ -72,6 +73,14 @@ export function App() {
             element={
               <Suspense fallback={lazyPageFallback()}>
                 <Orders />
+              </Suspense>
+            }
+          />
+          <Route
+            path="profil"
+            element={
+              <Suspense fallback={lazyPageFallback()}>
+                <Profile />
               </Suspense>
             }
           />

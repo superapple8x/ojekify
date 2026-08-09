@@ -16,9 +16,12 @@ import type {
   ProviderReview,
   Quote,
   QuoteRequest,
+  RedeemVoucherResult,
+  RedeemedVoucher,
   ReviewSubmission,
   ReviewSubmissionInput,
   ServiceMeta,
+  VoucherCatalogItem,
   Zone,
 } from './types'
 import { PROVIDERS, SERVICES } from './providers'
@@ -62,6 +65,8 @@ export type {
   Quote,
   QuoteRequest,
   ReceiptLine,
+  RedeemVoucherResult,
+  RedeemedVoucher,
   ResultTag,
   ReviewPillars,
   ReviewSubmission,
@@ -76,6 +81,8 @@ export type {
   VibeTag,
   VibeTagCount,
   VibeTagKind,
+  VoucherCatalogItem,
+  VoucherKind,
   WaFieldId,
   WaTemplate,
   Zone,
@@ -107,6 +114,7 @@ const NOTIFICATIONS_KEY = 'pilihjek-notifications'
 const REVIEWS_KEY = 'pilihjek-reviews'
 const KOIN_KEY = 'pilihjek-koin'
 const DISPUTES_KEY = 'pilihjek-disputes'
+const VOUCHERS_KEY = 'pilihjek-vouchers'
 
 // Ulasan jujur = +50 KampusKoin (review.txt §6).
 export const REVIEW_KOIN_REWARD = 50
@@ -135,6 +143,42 @@ const KOIN_SEED: KampusKoinState = {
 
 // Review hook: 45 menit setelah order, mock "push" menawarkan review (+50 KampusKoin).
 const REVIEW_HOOK_MS = 45 * 60 * 1000
+
+// Katalog voucher tukar KampusKoin (review.txt §6: "Free Print Service" / "Free Delivery").
+const VOUCHER_CATALOG: VoucherCatalogItem[] = [
+  {
+    id: 'vou-print-10',
+    kind: 'print',
+    emoji: '🖨️',
+    title: 'Print 10 Lembar Gratis',
+    description: 'Hitam putih A4, kertas 70gr — sebutkan kode voucher ke admin print shop.',
+    cost: 120,
+  },
+  {
+    id: 'vou-deliver-1',
+    kind: 'delivery',
+    emoji: '🛵',
+    title: 'Ongkir Gratis 1×',
+    description: 'Antar dalam kampus tanpa biaya pengiriman, tanpa biaya tersembunyi.',
+    cost: 100,
+  },
+  {
+    id: 'vou-print-25',
+    kind: 'print',
+    emoji: '📜',
+    title: 'Print 25 Lembar + Jilid Spiral',
+    description: 'Paket skripsi favorit: 25 lembar + jilid spiral di bengkel cetak partner.',
+    cost: 380,
+  },
+  {
+    id: 'vou-deliver-3',
+    kind: 'delivery',
+    emoji: '🚚',
+    title: 'Ongkir Gratis 3×',
+    description: 'Tiga perjalanan antar bebas ongkir — hemat untuk balas jasa teman.',
+    cost: 350,
+  },
+]
 
 // Seed demo orders 1× (pola KOIN_SEED): halaman /pesanan langsung bisa diperagakan
 // dengan beragam status, dan tetap aman karena flag terpisah dari data order.
@@ -306,6 +350,56 @@ export class MockApiClient implements ApiClient {
 
   getKampusKoin(): Promise<KampusKoinState> {
     return simulateNetwork(this.getKampusKoinStateSync())
+  }
+
+  getVoucherCatalog(): Promise<VoucherCatalogItem[]> {
+    return simulateNetwork(VOUCHER_CATALOG)
+  }
+
+  getRedeemedVouchers(): Promise<RedeemedVoucher[]> {
+    return simulateNetwork(readStore<RedeemedVoucher[]>(VOUCHERS_KEY, []))
+  }
+
+  redeemVoucher(catalogId: string): Promise<RedeemVoucherResult> {
+    const item = VOUCHER_CATALOG.find((candidate) => candidate.id === catalogId)
+    if (!item) return simulateNetwork({ voucher: null, error: 'not-found' })
+    const koin = this.getKampusKoinStateSync()
+    if (koin.balance < item.cost) {
+      return simulateNetwork({ voucher: null, error: 'insufficient' })
+    }
+    const redeemed: RedeemedVoucher = {
+      id: `VCH-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      catalogId: item.id,
+      kind: item.kind,
+      emoji: item.emoji,
+      title: item.title,
+      cost: item.cost,
+      code: `PJK-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+      redeemedAt: Date.now(),
+    }
+    writeStore(VOUCHERS_KEY, [
+      ...readStore<RedeemedVoucher[]>(VOUCHERS_KEY, []),
+      redeemed,
+    ])
+    const next = this.addKoin({
+      kind: 'spend',
+      amount: -item.cost,
+      reason: 'voucher',
+      note: `Tukar ${item.title} — sisa ${koin.balance - item.cost} KampusKoin`,
+    })
+    const notification: AppNotification = {
+      id: `NOT-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      kind: 'voucher-redeemed',
+      title: 'Voucher terbit 🎫',
+      body: `${item.emoji} ${item.title} — kode ${redeemed.code}. Saldo sekarang ${next.balance} KampusKoin.`,
+      at: Date.now(),
+      read: false,
+    }
+    writeStore(NOTIFICATIONS_KEY, [
+      ...readStore<AppNotification[]>(NOTIFICATIONS_KEY, []),
+      notification,
+    ])
+    return simulateNetwork({ voucher: redeemed, error: null })
   }
 
   getQuote(providerId: string, request: QuoteRequest): Promise<Quote | undefined> {

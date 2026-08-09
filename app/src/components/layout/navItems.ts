@@ -9,4 +9,5 @@ export const NAV_LINKS: NavItem[] = [
   { to: '/cetak', label: 'Cetak & Antar' },
   { to: '/provider', label: 'Provider' },
   { to: '/pesanan', label: 'Pesanan' },
+  { to: '/profil', label: 'Profil' },
 ]
