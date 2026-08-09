@@ -1,0 +1,259 @@
+import type {
+  ApiClient,
+  AppNotification,
+  ComparisonResult,
+  DueReviewHook,
+  LeaderboardEntry,
+  OrderItem,
+  PdfDescriptor,
+  PlaceOrderInput,
+  Provider,
+  ProviderReview,
+  Quote,
+  QuoteRequest,
+  ReviewSubmission,
+  ReviewSubmissionInput,
+  ServiceMeta,
+  Zone,
+} from './types'
+import { PROVIDERS, SERVICES } from './providers'
+import { ZONES } from './zones'
+import { compareQuotes, computeQuote } from './priceEngine'
+import { LEADERBOARD, LEADERBOARD_WEEK, REVIEWS } from './reviews'
+import { mockPdfPageCount, mockPrintFileLink } from './print'
+
+export type {
+  ApiClient,
+  AppNotification,
+  BindingId,
+  CasRules,
+  ComparisonResult,
+  ComparisonRow,
+  DueReviewHook,
+  ErrandKind,
+  FareBand,
+  ItemCas,
+  LeaderboardEntry,
+  NightCas,
+  NotificationKind,
+  OrderItem,
+  OrderStatus,
+  PaperSizeId,
+  PaperWeightId,
+  PaymentMethod,
+  PdfDescriptor,
+  PlaceOrderInput,
+  PriceConditions,
+  PrintColorMode,
+  Provider,
+  ProviderReview,
+  ProviderTier,
+  Quote,
+  QuoteRequest,
+  ReceiptLine,
+  ResultTag,
+  ReviewPillars,
+  ReviewSubmission,
+  ReviewSubmissionInput,
+  PriceHonestyRating,
+  ItemSafetyRating,
+  SpeedRating,
+  ServiceExtras,
+  ServiceId,
+  ServiceMeta,
+  TopupTier,
+  VibeTag,
+  VibeTagCount,
+  VibeTagKind,
+  WaFieldId,
+  WaTemplate,
+  Zone,
+  ZoneArea,
+} from './types'
+export { ZONES, ZONES_BY_ID, getZone } from './zones'
+export { PROVIDERS, PROVIDERS_BY_ID, SERVICES, ERRAND_KINDS, VIBE_TAGS } from './providers'
+export { computeQuote, compareQuotes, distanceKm, getQuote } from './priceEngine'
+export { REVIEWS, REVIEWS_BY_PROVIDER, LEADERBOARD, LEADERBOARD_WEEK } from './reviews'
+export { BINDINGS, BINDINGS_BY_ID, COLOR_MODES, DEFAULT_PRINT_DRAFT, PAPER_SIZES, PAPER_WEIGHTS, PRINT_PARTNER, PRINT_RATES, estimatePrintDeliveryFee, estimatePrintJob, mockPrintFileLink } from './print'
+export type { PrintDeliveryEstimate, PrintJobEstimate } from './print'
+
+const latencyMs = () => 80 + Math.round(Math.random() * 220)
+
+function simulateNetwork<T>(value: T): Promise<T> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(structuredClone(value)), latencyMs())
+  })
+}
+
+/**
+ * Swap point: ganti instance `api` di bawah dengan client backend nyata
+ * yang mengimplementasikan interface `ApiClient`. Tidak ada komponen lain
+ * yang boleh import data mock secara langsung.
+ */
+
+const ORDERS_KEY = 'pilihjek-orders'
+const NOTIFICATIONS_KEY = 'pilihjek-notifications'
+const REVIEWS_KEY = 'pilihjek-reviews'
+
+// Review hook: 45 menit setelah order, mock "push" menawarkan review (+50 KampusKoin).
+const REVIEW_HOOK_MS = 45 * 60 * 1000
+
+function readStore<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as T) : fallback
+  } catch {
+    return fallback
+  }
+}
+
+function writeStore<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    // storage penuh / private mode — pretend it worked
+  }
+}
+
+export class MockApiClient implements ApiClient {
+  getServices(): Promise<ServiceMeta[]> {
+    return simulateNetwork(SERVICES)
+  }
+
+  getZones(): Promise<Zone[]> {
+    return simulateNetwork(ZONES)
+  }
+
+  getProviders(): Promise<Provider[]> {
+    return simulateNetwork(PROVIDERS)
+  }
+
+  getProvider(id: string): Promise<Provider | undefined> {
+    return simulateNetwork(PROVIDERS.find((provider) => provider.id === id))
+  }
+
+  getReviews(): Promise<ProviderReview[]> {
+    return simulateNetwork(REVIEWS)
+  }
+
+  getReview(providerId: string): Promise<ProviderReview | undefined> {
+    return simulateNetwork(REVIEWS.find((review) => review.providerId === providerId))
+  }
+
+  getLeaderboard(): Promise<LeaderboardEntry[]> {
+    return simulateNetwork(LEADERBOARD)
+  }
+
+  getLeaderboardWeek(): Promise<string> {
+    return simulateNetwork(LEADERBOARD_WEEK)
+  }
+
+  submitReview(input: ReviewSubmissionInput): Promise<ReviewSubmission> {
+    const submission: ReviewSubmission = {
+      id: `RVT-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      createdAt: Date.now(),
+      ...input,
+    }
+    writeStore(REVIEWS_KEY, [...readStore<ReviewSubmission[]>(REVIEWS_KEY, []), submission])
+    return simulateNetwork(submission)
+  }
+
+  getQuote(providerId: string, request: QuoteRequest): Promise<Quote | undefined> {
+    const provider = PROVIDERS.find((candidate) => candidate.id === providerId)
+    if (!provider) return simulateNetwork(undefined)
+    return simulateNetwork(computeQuote(provider, request))
+  }
+
+  compareQuote(request: QuoteRequest): Promise<ComparisonResult> {
+    return simulateNetwork(compareQuotes(PROVIDERS, request))
+  }
+
+  countPdfPages(pdf: PdfDescriptor): Promise<number> {
+    return simulateNetwork(mockPdfPageCount(pdf))
+  }
+
+  getPrintFileLink(pdf: PdfDescriptor): Promise<string> {
+    return simulateNetwork(mockPrintFileLink(pdf))
+  }
+
+  placeOrder(input: PlaceOrderInput): Promise<OrderItem> {
+    const order: OrderItem = {
+      id: `OPS-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      createdAt: Date.now(),
+      status: 'pending',
+      ...input,
+      reviewPendingAt: Date.now() + REVIEW_HOOK_MS,
+    }
+    writeStore(ORDERS_KEY, [...readStore<OrderItem[]>(ORDERS_KEY, []), order])
+    const notification: AppNotification = {
+      id: `NOT-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      kind: 'order-confirmed',
+      title: 'Order via WhatsApp tercatat 📦',
+      body: `${order.serviceLabel}: ${order.pickupName} → ${order.dropoffName} • ${order.providerName}`,
+      at: order.createdAt,
+      read: false,
+    }
+    writeStore(NOTIFICATIONS_KEY, [
+      ...readStore<AppNotification[]>(NOTIFICATIONS_KEY, []),
+      notification,
+    ])
+    return simulateNetwork(order)
+  }
+
+  getOrders(): Promise<OrderItem[]> {
+    return simulateNetwork(readStore<OrderItem[]>(ORDERS_KEY, []))
+  }
+
+  getNotifications(): Promise<AppNotification[]> {
+    return simulateNetwork(readStore<AppNotification[]>(NOTIFICATIONS_KEY, []))
+  }
+
+  markNotificationsRead(): Promise<void> {
+    const all = readStore<AppNotification[]>(NOTIFICATIONS_KEY, []).map((notification) => ({
+      ...notification,
+      read: true,
+    }))
+    writeStore(NOTIFICATIONS_KEY, all)
+    return simulateNetwork(undefined)
+  }
+
+  getDueReviewHooks(now: number): Promise<DueReviewHook[]> {
+    const hooks: DueReviewHook[] = readStore<OrderItem[]>(ORDERS_KEY, [])
+      .filter((order) => order.reviewPendingAt !== null && order.reviewPendingAt <= now)
+      .map((order) => ({
+        orderId: order.id,
+        providerId: order.providerId,
+        providerName: order.providerName,
+        providerEmoji: order.providerEmoji,
+        total: order.total,
+      }))
+    return simulateNetwork(hooks)
+  }
+
+  deliverReviewHook(orderId: string): Promise<AppNotification> {
+    const orders = readStore<OrderItem[]>(ORDERS_KEY, [])
+    const order = orders.find((candidate) => candidate.id === orderId)
+    if (!order) throw new Error(`Order tidak ditemukan: ${orderId}`)
+    writeStore(
+      ORDERS_KEY,
+      orders.map((candidate) =>
+        candidate.id === orderId ? { ...candidate, reviewPendingAt: null } : candidate,
+      ),
+    )
+    const notification: AppNotification = {
+      id: `NOT-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      kind: 'review-hook',
+      title: `Review ${order.providerName}? ⭐`,
+      body: `Did ${order.providerName} save the day? Nilai sekarang, +50 KampusKoin.`,
+      at: Date.now(),
+      read: false,
+    }
+    writeStore(NOTIFICATIONS_KEY, [
+      ...readStore<AppNotification[]>(NOTIFICATIONS_KEY, []),
+      notification,
+    ])
+    return simulateNetwork(notification)
+  }
+}
+
+export const api: ApiClient = new MockApiClient()

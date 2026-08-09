@@ -1,0 +1,11 @@
+# Design docs & planning — kept local, not part of the repo
+concept_and_design/
+FRONTEND_PLAN.md
+
+# Editor
+.vscode/
+.idea/
+*.sw?
+
+# OS
+.DS_Store

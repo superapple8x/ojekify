@@ -1,0 +1,440 @@
+import type { ErrandKind, Provider, ServiceMeta, VibeTag } from './types'
+
+export const SERVICES: ServiceMeta[] = [
+  {
+    id: 'ride',
+    label: 'Ride',
+    emoji: '🛵',
+    description: 'Naik ojek dari–ke zona dalam atau luar kampus.',
+  },
+  {
+    id: 'food',
+    label: 'Food Delivery',
+    emoji: '🍜',
+    description: 'Belikan dan antar pesanan makanan dari area sekitar.',
+  },
+  {
+    id: 'send',
+    label: 'Send Item',
+    emoji: '📦',
+    description: 'Kirim dokumen, barang, atau bingkisan antar zona.',
+  },
+  {
+    id: 'print',
+    label: 'Print & Antar',
+    emoji: '🖨️',
+    description: 'Cetak dokumen (PDF) lalu diantar sampai depan kost.',
+  },
+  {
+    id: 'jasa',
+    label: 'Jasa',
+    emoji: '⚙️',
+    description: 'Errand: galon, gas, top-up e-wallet, sampai belanjaan.',
+  },
+]
+
+export const ERRAND_KINDS: { id: ErrandKind; emoji: string; label: string }[] = [
+  { id: 'galon', emoji: '💧', label: 'Tambah Galon' },
+  { id: 'gas', emoji: '🔥', label: 'Pesan Gas 3 kg' },
+  { id: 'topup', emoji: '💳', label: 'Top-up E-Wallet' },
+  { id: 'other', emoji: '🛒', label: 'Belanja / Lainnya' },
+]
+
+const INF = Number.POSITIVE_INFINITY
+
+export const PROVIDERS: Provider[] = [
+  {
+    id: 'kuy-jek',
+    name: 'Kuy Jek',
+    tagline: 'Jek andalan warga kampus.',
+    emoji: '🏍️',
+    phone: '628123450001',
+    tier: 'legend',
+    rating: 4.8,
+    reviews: 843,
+    responseTimeMinutes: 15,
+    noHiddenFees: true,
+    openHours: '05:00 – 23:00',
+    fares: {
+      ride: [
+        { maxKm: 1.2, price: 5_000 },
+        { maxKm: 2.5, price: 8_000 },
+        { maxKm: INF, price: 11_000 },
+      ],
+      food: [
+        { maxKm: 1.2, price: 6_000 },
+        { maxKm: 2.5, price: 9_000 },
+        { maxKm: INF, price: 12_000 },
+      ],
+      send: [
+        { maxKm: 1.2, price: 7_000 },
+        { maxKm: 2.5, price: 10_000 },
+        { maxKm: INF, price: 14_000 },
+      ],
+      print: [
+        { maxKm: 1.2, price: 6_000 },
+        { maxKm: 2.5, price: 9_000 },
+        { maxKm: INF, price: 12_000 },
+      ],
+      jasa: [
+        { maxKm: 1.2, price: 7_000 },
+        { maxKm: 2.5, price: 10_000 },
+        { maxKm: INF, price: 14_000 },
+      ],
+    },
+    cas: {
+      rain: 1_000,
+      cashless: 1_000,
+      night: { from: 22, fee: 2_000 },
+      itemFee: { startAt: 5, step: 4, fee: 1_000 },
+      perStore: 1_500,
+      topup: [
+        { upto: 50_000, fee: 2_000 },
+        { upto: 100_000, fee: 3_000 },
+        { upto: null, fee: 5_000 },
+      ],
+    },
+    waTemplate: {
+      id: 'kuy-dash',
+      greeting: 'Halo Admin Kuy Jek, mau order ya:',
+      separator: ' - ',
+      fields: ['service', 'pickup', 'dropoff', 'payment'],
+      needsName: false,
+      includeFareSummary: true,
+    },
+    tags: [
+      { id: 'penyelamat-skripsi', label: 'Penyelamat Skripsi', kind: 'positive' },
+      { id: 'admin-fast', label: 'Admin Fast Respon', kind: 'positive' },
+      { id: 'anti-nyasar', label: 'Anti-Nyasar', kind: 'positive' },
+      { id: 'sering-telat', label: 'Sering Telat', kind: 'warning' },
+    ],
+  },
+  {
+    id: 'jek-ngebut',
+    name: 'JekNgebut',
+    tagline: 'Bukan namanya kalau nggak ngebut.',
+    emoji: '🚀',
+    phone: '628123450002',
+    tier: 'verified',
+    rating: 4.9,
+    reviews: 361,
+    responseTimeMinutes: 3,
+    noHiddenFees: true,
+    openHours: '24 jam',
+    fares: {
+      ride: [
+        { maxKm: 1.2, price: 5_500 },
+        { maxKm: 2.5, price: 8_500 },
+        { maxKm: INF, price: 11_500 },
+      ],
+      food: [
+        { maxKm: 1.2, price: 6_500 },
+        { maxKm: 2.5, price: 9_500 },
+        { maxKm: INF, price: 12_500 },
+      ],
+      send: [
+        { maxKm: 1.2, price: 7_500 },
+        { maxKm: 2.5, price: 10_500 },
+        { maxKm: INF, price: 14_500 },
+      ],
+      print: [
+        { maxKm: 1.2, price: 6_500 },
+        { maxKm: 2.5, price: 9_500 },
+        { maxKm: INF, price: 12_500 },
+      ],
+      jasa: [
+        { maxKm: 1.2, price: 7_500 },
+        { maxKm: 2.5, price: 10_500 },
+        { maxKm: INF, price: 14_500 },
+      ],
+    },
+    cas: {
+      rain: 0,
+      cashless: 1_000,
+      night: { from: 22, fee: 3_000 },
+      itemFee: { startAt: 5, step: 4, fee: 1_500 },
+      perStore: 2_000,
+      topup: [
+        { upto: 50_000, fee: 2_500 },
+        { upto: 100_000, fee: 3_500 },
+        { upto: null, fee: 6_000 },
+      ],
+    },
+    waTemplate: {
+      id: 'ngebut-pipe',
+      greeting: 'Halo Gan! Orderan ngebut:',
+      separator: ' | ',
+      fields: ['service', 'pickup', 'dropoff', 'payment', 'items'],
+      needsName: true,
+      includeFareSummary: true,
+    },
+    tags: [
+      { id: 'admin-fast', label: 'Admin Fast Respon', kind: 'positive' },
+      { id: 'anti-nyasar', label: 'Anti-Nyasar', kind: 'positive' },
+      { id: 'suka-minta', label: 'Suka Minta Tambahan', kind: 'warning' },
+    ],
+  },
+  {
+    id: 'kampus-jek',
+    name: 'KampusJek',
+    tagline: 'Jaringannya luas sampai luar kota.',
+    emoji: '🕹️',
+    phone: '628123450003',
+    tier: 'verified',
+    rating: 4.2,
+    reviews: 1_204,
+    responseTimeMinutes: 45,
+    noHiddenFees: false,
+    openHours: '06:00 – 00:00',
+    fares: {
+      ride: [
+        { maxKm: 1.2, price: 6_000 },
+        { maxKm: 2.5, price: 9_000 },
+        { maxKm: INF, price: 12_000 },
+      ],
+      food: [
+        { maxKm: 1.2, price: 7_000 },
+        { maxKm: 2.5, price: 10_000 },
+        { maxKm: INF, price: 13_000 },
+      ],
+      send: [
+        { maxKm: 1.2, price: 8_000 },
+        { maxKm: 2.5, price: 11_000 },
+        { maxKm: INF, price: 15_000 },
+      ],
+      print: [
+        { maxKm: 1.2, price: 7_000 },
+        { maxKm: 2.5, price: 10_000 },
+        { maxKm: INF, price: 13_000 },
+      ],
+      jasa: [
+        { maxKm: 1.2, price: 8_000 },
+        { maxKm: 2.5, price: 11_000 },
+        { maxKm: INF, price: 15_000 },
+      ],
+    },
+    cas: {
+      rain: 0,
+      cashless: 2_000,
+      night: { from: 21, fee: 2_500 },
+      itemFee: { startAt: 5, step: 4, fee: 2_000 },
+      perStore: 2_000,
+      topup: [
+        { upto: 50_000, fee: 3_000 },
+        { upto: 100_000, fee: 4_000 },
+        { upto: null, fee: 6_000 },
+      ],
+    },
+    waTemplate: {
+      id: 'kampus-strict',
+      greeting: 'SELAMAT MALAM ADMIN KAMPUS JEK 🙏',
+      separator: ' - ',
+      fields: ['service', 'pickup', 'dropoff', 'payment', 'notes'],
+      needsName: true,
+      includeFareSummary: true,
+    },
+    tags: [
+      { id: 'amanah-topup', label: 'Amanah Top-Up', kind: 'positive' },
+      { id: 'suka-minta', label: 'Suka Minta Tambahan', kind: 'warning' },
+      { id: 'admin-jutek', label: 'Admin Jutek', kind: 'warning' },
+      { id: 'sering-telat', label: 'Sering Telat', kind: 'warning' },
+    ],
+  },
+  {
+    id: 'print-kuy',
+    name: 'PrintKuy',
+    tagline: 'Printer 24 jam, kualitas kampus.',
+    emoji: '🖨️',
+    phone: '628123450024',
+    tier: 'verified',
+    rating: 4.6,
+    reviews: 287,
+    responseTimeMinutes: 10,
+    noHiddenFees: true,
+    openHours: '24 jam (print center)',
+    fares: {
+      ride: [
+        { maxKm: 1.2, price: 6_000 },
+        { maxKm: 2.5, price: 9_000 },
+        { maxKm: INF, price: 12_000 },
+      ],
+      food: [
+        { maxKm: 1.2, price: 7_000 },
+        { maxKm: 2.5, price: 10_000 },
+        { maxKm: INF, price: 13_000 },
+      ],
+      send: [
+        { maxKm: 1.2, price: 7_000 },
+        { maxKm: 2.5, price: 10_000 },
+        { maxKm: INF, price: 14_000 },
+      ],
+      print: [
+        { maxKm: 1.2, price: 4_000 },
+        { maxKm: 2.5, price: 6_000 },
+        { maxKm: INF, price: 9_000 },
+      ],
+      jasa: [
+        { maxKm: 1.2, price: 8_000 },
+        { maxKm: 2.5, price: 11_000 },
+        { maxKm: INF, price: 15_000 },
+      ],
+    },
+    cas: {
+      rain: 1_000,
+      cashless: 1_000,
+      night: { from: 22, fee: 1_500 },
+      itemFee: null,
+      perStore: 2_000,
+      topup: [],
+    },
+    waTemplate: {
+      id: 'print-pipe',
+      greeting: 'Hai PrintKuy, mau cetak + antar:',
+      separator: ' / ',
+      fields: ['service', 'pickup', 'dropoff', 'payment', 'notes'],
+      needsName: false,
+      includeFareSummary: true,
+    },
+    tags: [
+      { id: 'penyelamat-skripsi', label: 'Penyelamat Skripsi', kind: 'positive' },
+      { id: 'admin-fast', label: 'Admin Fast Respon', kind: 'positive' },
+      { id: 'sering-telat', label: 'Sering Telat', kind: 'warning' },
+    ],
+  },
+  {
+    id: 'bunda-jek',
+    name: 'Bunda Jek',
+    tagline: 'Jasa titip galon, gas, dan belanjaan.',
+    emoji: '🧺',
+    phone: '628123450048',
+    tier: 'verified',
+    rating: 4.6,
+    reviews: 512,
+    responseTimeMinutes: 10,
+    noHiddenFees: true,
+    openHours: '07:00 – 22:00',
+    fares: {
+      ride: [
+        { maxKm: 1.2, price: 6_000 },
+        { maxKm: 2.5, price: 9_000 },
+        { maxKm: INF, price: 12_000 },
+      ],
+      food: [
+        { maxKm: 1.2, price: 6_000 },
+        { maxKm: 2.5, price: 9_000 },
+        { maxKm: INF, price: 12_000 },
+      ],
+      send: [
+        { maxKm: 1.2, price: 7_000 },
+        { maxKm: 2.5, price: 10_000 },
+        { maxKm: INF, price: 14_000 },
+      ],
+      print: [
+        { maxKm: 1.2, price: 8_000 },
+        { maxKm: 2.5, price: 11_000 },
+        { maxKm: INF, price: 15_000 },
+      ],
+      jasa: [
+        { maxKm: 1.2, price: 5_000 },
+        { maxKm: 2.5, price: 8_000 },
+        { maxKm: INF, price: 11_000 },
+      ],
+    },
+    cas: {
+      rain: 1_500,
+      cashless: 0,
+      night: { from: 23, fee: 2_000 },
+      itemFee: { startAt: 5, step: 4, fee: 1_500 },
+      perStore: 1_000,
+      topup: [
+        { upto: 50_000, fee: 1_500 },
+        { upto: 100_000, fee: 2_500 },
+        { upto: null, fee: 4_000 },
+      ],
+    },
+    waTemplate: {
+      id: 'bunda-arrow',
+      greeting: 'Bund, mau nitip:',
+      separator: ' => ',
+      fields: ['service', 'pickup', 'dropoff', 'payment', 'notes'],
+      needsName: true,
+      includeFareSummary: true,
+    },
+    tags: [
+      { id: 'amanah-topup', label: 'Amanah Top-Up', kind: 'positive' },
+      { id: 'anti-nyasar', label: 'Anti-Nyasar', kind: 'positive' },
+      { id: 'admin-jutek', label: 'Admin Jutek', kind: 'warning' },
+    ],
+  },
+  {
+    id: 'mitra-jek',
+    name: 'Mitra Jek',
+    tagline: 'Baru merintis, harga paling ramah.',
+    emoji: '🌱',
+    phone: '628123450077',
+    tier: 'newbie',
+    rating: 4.1,
+    reviews: 47,
+    responseTimeMinutes: 25,
+    noHiddenFees: false,
+    openHours: '06:00 – 21:00',
+    fares: {
+      ride: [
+        { maxKm: 1.2, price: 3_500 },
+        { maxKm: 2.5, price: 6_000 },
+        { maxKm: INF, price: 9_000 },
+      ],
+      food: [
+        { maxKm: 1.2, price: 4_500 },
+        { maxKm: 2.5, price: 7_000 },
+        { maxKm: INF, price: 10_000 },
+      ],
+      send: [
+        { maxKm: 1.2, price: 5_500 },
+        { maxKm: 2.5, price: 8_000 },
+        { maxKm: INF, price: 11_000 },
+      ],
+      print: [
+        { maxKm: 1.2, price: 4_500 },
+        { maxKm: 2.5, price: 7_000 },
+        { maxKm: INF, price: 10_000 },
+      ],
+      jasa: [
+        { maxKm: 1.2, price: 5_500 },
+        { maxKm: 2.5, price: 8_000 },
+        { maxKm: INF, price: 11_000 },
+      ],
+    },
+    cas: {
+      rain: 1_500,
+      cashless: 1_000,
+      night: { from: 23, fee: 1_000 },
+      itemFee: { startAt: 5, step: 4, fee: 1_500 },
+      perStore: 2_000,
+      topup: [
+        { upto: 50_000, fee: 3_000 },
+        { upto: 100_000, fee: 4_000 },
+        { upto: null, fee: 6_000 },
+      ],
+    },
+    waTemplate: {
+      id: 'mitra-dot',
+      greeting: 'Halo Mitra, orderan:',
+      separator: '.',
+      fields: ['service', 'pickup', 'dropoff', 'payment', 'items'],
+      needsName: false,
+      includeFareSummary: true,
+    },
+    tags: [
+      { id: 'admin-fast', label: 'Admin Fast Respon', kind: 'positive' },
+      { id: 'suka-minta', label: 'Suka Minta Tambahan', kind: 'warning' },
+      { id: 'sering-telat', label: 'Sering Telat', kind: 'warning' },
+    ],
+  },
+]
+
+export const PROVIDERS_BY_ID: Record<string, Provider> = Object.fromEntries(
+  PROVIDERS.map((provider) => [provider.id, provider]),
+)
+
+export const VIBE_TAGS: VibeTag[] = PROVIDERS.flatMap((provider) => provider.tags)
