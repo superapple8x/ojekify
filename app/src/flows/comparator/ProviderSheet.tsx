@@ -5,6 +5,7 @@ import { formatKm } from '../../lib/format'
 import { buildWaMessage } from '../../lib/waMessage'
 import { buildWaLink, copyToClipboard } from '../../lib/wa'
 import { pushAppToast } from '../../hooks/useAppToasts'
+import { pushOrdersChanged } from '../../hooks/useOrders'
 
 export interface ProviderSheetProps {
   row: ComparisonRow | null
@@ -113,6 +114,7 @@ export function ProviderSheet({
         title: 'Order tercatat di riwayat',
         body: `${service.emoji} ${service.label} • ${pickup.emoji} ${pickup.name} → ${dropoff.emoji} ${dropoff.name} via ${provider.name} — kamu akan diingatkan menilai 45 menit lagi (+50 KampusKoin).`,
       })
+      pushOrdersChanged()
       window.open(waLink, '_blank', 'noopener,noreferrer')
     } finally {
       setOpening(false)

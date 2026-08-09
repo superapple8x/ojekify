@@ -13,6 +13,7 @@ import { buildPrintWaMessage } from '../../../lib/printWaMessage'
 import { buildWaLink, copyToClipboard } from '../../../lib/wa'
 import { formatIDR } from '../../../lib/format'
 import { pushAppToast } from '../../../hooks/useAppToasts'
+import { pushOrdersChanged } from '../../../hooks/useOrders'
 import { Button } from '../../../components'
 
 export interface SummaryStepProps {
@@ -142,6 +143,7 @@ export function SummaryStep({
         title: 'Order Cetak & Antar tercatat',
         body: `Ada ambil dari fotokopian & antar ke ${deliverTo.name} — kamu akan diingatkan menilai 45 menit lagi (+50 KampusKoin).`,
       })
+      pushOrdersChanged()
       window.open(waLink, '_blank', 'noopener,noreferrer')
     } finally {
       setOpening(false)

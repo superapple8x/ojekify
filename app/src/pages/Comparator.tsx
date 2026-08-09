@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   SERVICE_STEP_LABELS,
   type ComparatorDraft,
@@ -10,6 +11,7 @@ import { RouteStep } from '../flows/comparator/steps/RouteStep'
 import { ConditionsStep } from '../flows/comparator/steps/ConditionsStep'
 import { ExtrasStep } from '../flows/comparator/steps/ExtrasStep'
 import { ResultsView } from '../flows/comparator/ResultsView'
+import type { ServiceId } from '../api'
 
 const EMPTY_DRAFT: ComparatorDraft = {
   service: null,
@@ -20,6 +22,8 @@ const EMPTY_DRAFT: ComparatorDraft = {
   forceNight: false,
   extras: {},
 }
+
+const SERVICE_IDS: ServiceId[] = ['ride', 'food', 'send', 'print', 'jasa']
 
 const STEPS: { title: string; subtitle: string }[] = [
   {
@@ -41,8 +45,15 @@ const STEPS: { title: string; subtitle: string }[] = [
 ]
 
 export default function Comparator() {
+  const [searchParams] = useSearchParams()
   const [step, setStep] = useState<ComparatorStepIndex>(0)
-  const [draft, setDraft] = useState<ComparatorDraft>(EMPTY_DRAFT)
+  const [draft, setDraft] = useState<ComparatorDraft>(() => {
+    const param = searchParams.get('service')
+    if (param && (SERVICE_IDS as string[]).includes(param)) {
+      return { ...EMPTY_DRAFT, service: param as ServiceId }
+    }
+    return EMPTY_DRAFT
+  })
   const [submitted, setSubmitted] = useState(false)
 
   const realHour = new Date().getHours()

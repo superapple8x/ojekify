@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Button } from '../components'
+import { QuickActions } from '../flows/home/QuickActions'
+import { RecentOrders } from '../flows/home/RecentOrders'
 import { KampusKoinCard } from '../flows/home/KampusKoinCard'
 import { WallOfFame } from '../flows/home/WallOfFame'
 
@@ -23,6 +25,10 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      <QuickActions />
+
+      <RecentOrders />
 
       <KampusKoinCard />
 
