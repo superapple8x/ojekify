@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useOrders } from '../../hooks/useOrders'
 import { Button, Card, EmptyState, ProviderAvatar, SkeletonProviderRow, Tag } from '../../components'
 import { formatIDR, formatTimeAgo } from '../../lib/format'
+import { ORDER_STATUSES } from '../../lib/orderStatus'
 
 export function RecentOrders() {
   const { orders } = useOrders()
@@ -50,40 +51,43 @@ export function RecentOrders() {
 
       {recent && recent.length > 0 && (
         <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
-          {recent.map((order) => (
-            <li
-              key={order.id}
-              className="transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-            >
-              <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
-                <ProviderAvatar
-                  name={order.providerName}
-                  emoji={order.providerEmoji}
-                  seed={order.providerId}
-                  size="sm"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-extrabold">
-                    {order.serviceLabel} <span className="text-neutral-400">•</span>{' '}
-                    <span aria-label={`dari ${order.pickupName}`}>{order.pickupName}</span>{' '}
-                    <span aria-hidden>→</span>{' '}
-                    <span aria-label={`ke ${order.dropoffName}`}>{order.dropoffName}</span>
+          {recent.map((order) => {
+            const meta = ORDER_STATUSES[order.status]
+            return (
+              <li
+                key={order.id}
+                className="transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+              >
+                <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
+                  <ProviderAvatar
+                    name={order.providerName}
+                    emoji={order.providerEmoji}
+                    seed={order.providerId}
+                    size="sm"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-extrabold">
+                      {order.serviceLabel} <span className="text-neutral-400">•</span>{' '}
+                      <span aria-label={`dari ${order.pickupName}`}>{order.pickupName}</span>{' '}
+                      <span aria-hidden>→</span>{' '}
+                      <span aria-label={`ke ${order.dropoffName}`}>{order.dropoffName}</span>
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs text-neutral-500 dark:text-neutral-400">
+                      {order.providerName} • {formatTimeAgo(order.createdAt)}
+                    </span>
                   </span>
-                  <span className="mt-0.5 block truncate text-xs text-neutral-500 dark:text-neutral-400">
-                    {order.providerName} • {formatTimeAgo(order.createdAt)}
+                  <span className="shrink-0 text-right">
+                    <span className="block text-sm font-extrabold tabular-nums">
+                      {formatIDR(order.total)}
+                    </span>
+                    <Tag variant={meta.variant} icon={<span aria-hidden>{meta.emoji}</span>} className="mt-1">
+                      {meta.label}
+                    </Tag>
                   </span>
-                </span>
-                <span className="shrink-0 text-right">
-                  <span className="block text-sm font-extrabold tabular-nums">
-                    {formatIDR(order.total)}
-                  </span>
-                  <Tag variant="neutral" className="mt-1">
-                    Menunggu
-                  </Tag>
-                </span>
-              </div>
-            </li>
-          ))}
+                </div>
+              </li>
+            )
+          })}
         </ul>
       )}
     </Card>

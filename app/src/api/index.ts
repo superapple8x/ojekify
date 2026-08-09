@@ -9,6 +9,7 @@ import type {
   KampusKoinState,
   LeaderboardEntry,
   OrderItem,
+  OrderStatus,
   PdfDescriptor,
   PlaceOrderInput,
   Provider,
@@ -134,6 +135,69 @@ const KOIN_SEED: KampusKoinState = {
 
 // Review hook: 45 menit setelah order, mock "push" menawarkan review (+50 KampusKoin).
 const REVIEW_HOOK_MS = 45 * 60 * 1000
+
+// Seed demo orders 1× (pola KOIN_SEED): halaman /pesanan langsung bisa diperagakan
+// dengan beragam status, dan tetap aman karena flag terpisah dari data order.
+const ORDERS_SEEDED_KEY = 'pilihjek-orders-seeded'
+
+function seedOrdersOnce(): OrderItem[] {
+  const seeded = localStorage.getItem(ORDERS_SEEDED_KEY)
+  if (seeded) return readStore<OrderItem[]>(ORDERS_KEY, [])
+  const HOUR = 60 * 60 * 1000
+  const DAY = 24 * HOUR
+  const now = Date.now()
+  const demo: OrderItem[] = [
+    {
+      id: 'OPS-DEMO-1',
+      createdAt: now - 2 * HOUR,
+      status: 'selesai',
+      providerId: 'kuy-jek',
+      providerName: 'Kuy Jek',
+      providerEmoji: '🛺',
+      serviceLabel: 'Food Delivery',
+      pickupName: 'Kantin Biru',
+      dropoffName: 'Asrama Putra',
+      total: 19000,
+      waUrl: 'https://wa.me/6281234567890?text=Order-DEMO-1',
+      reviewPendingAt: null,
+    },
+    {
+      id: 'OPS-DEMO-2',
+      createdAt: now - 9 * HOUR,
+      status: 'proses',
+      providerId: 'kampus-jek',
+      providerName: 'KampusJek',
+      providerEmoji: '🏫',
+      serviceLabel: 'Ride',
+      pickupName: 'Gerbang Utama',
+      dropoffName: 'Fakultas Teknik',
+      total: 11000,
+      waUrl: 'https://wa.me/6289876543210?text=Order-DEMO-2',
+      reviewPendingAt: null,
+    },
+    {
+      id: 'OPS-DEMO-3',
+      createdAt: now - 3 * DAY - 4 * HOUR,
+      status: 'dibatalkan',
+      providerId: 'print-kuy',
+      providerName: 'PrintKuy',
+      providerEmoji: '🖨️',
+      serviceLabel: 'Print & Antar',
+      pickupName: 'Fotokopian Campus',
+      dropoffName: 'Perpustakaan Pusat',
+      total: 23500,
+      waUrl: 'https://wa.me/6285551234567?text=Order-DEMO-3',
+      reviewPendingAt: null,
+    },
+  ]
+  writeStore(ORDERS_KEY, demo)
+  try {
+    localStorage.setItem(ORDERS_SEEDED_KEY, '1')
+  } catch {
+    // private mode — seed boleh terulang
+  }
+  return demo
+}
 
 function readStore<T>(key: string, fallback: T): T {
   try {
@@ -287,7 +351,24 @@ export class MockApiClient implements ApiClient {
   }
 
   getOrders(): Promise<OrderItem[]> {
-    return simulateNetwork(readStore<OrderItem[]>(ORDERS_KEY, []))
+    return simulateNetwork(seedOrdersOnce())
+  }
+
+  updateOrderStatus(orderId: string, next: OrderStatus): Promise<OrderItem | undefined> {
+    const orders = readStore<OrderItem[]>(ORDERS_KEY, [])
+    const order = orders.find((candidate) => candidate.id === orderId)
+    if (!order) return simulateNetwork(undefined)
+    const ALLOWED_NEXT: Partial<Record<OrderStatus, OrderStatus[]>> = {
+      pending: ['selesai', 'dibatalkan'],
+      proses: ['selesai', 'dibatalkan'],
+    }
+    if (!ALLOWED_NEXT[order.status]?.includes(next)) return simulateNetwork(undefined)
+    const updated: OrderItem = { ...order, status: next }
+    writeStore(
+      ORDERS_KEY,
+      orders.map((candidate) => (candidate.id === orderId ? updated : candidate)),
+    )
+    return simulateNetwork(updated)
   }
 
   getNotifications(): Promise<AppNotification[]> {

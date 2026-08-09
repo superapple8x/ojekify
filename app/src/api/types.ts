@@ -225,7 +225,7 @@ export interface DisputeSubmissionInput {
   kind: DisputeKind
 }
 
-export type OrderStatus = 'pending'
+export type OrderStatus = 'pending' | 'proses' | 'selesai' | 'dibatalkan'
 
 export interface OrderItem {
   id: string
@@ -291,6 +291,8 @@ export interface ApiClient {
   getPrintFileLink(pdf: PdfDescriptor): Promise<string>
   placeOrder(input: PlaceOrderInput): Promise<OrderItem>
   getOrders(): Promise<OrderItem[]>
+  /** Alur status mock: pending/proses → selesai|dibatalkan. */
+  updateOrderStatus(orderId: string, next: OrderStatus): Promise<OrderItem | undefined>
   getNotifications(): Promise<AppNotification[]>
   markNotificationsRead(): Promise<void>
   getDueReviewHooks(now: number): Promise<DueReviewHook[]>
