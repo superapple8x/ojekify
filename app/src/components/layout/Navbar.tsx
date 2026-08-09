@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { useTheme } from '../../hooks/useTheme'
 import { Button } from '../Button'
+import { KampusKoinBadge } from './KampusKoinBadge'
 import { NAV_LINKS } from './navItems'
 import { cn } from '../../lib/cn'
 
@@ -51,6 +52,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <KampusKoinBadge compact />
           <Button
             variant="ghost"
             size="sm"

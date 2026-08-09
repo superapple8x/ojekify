@@ -193,6 +193,22 @@ export interface PdfDescriptor {
   sizeBytes: number
 }
 
+export type KampusKoinKind = 'earn' | 'spend'
+
+export interface KampusKoinEntry {
+  id: string
+  kind: KampusKoinKind
+  amount: number
+  reason: string
+  note: string
+  at: number
+}
+
+export interface KampusKoinState {
+  balance: number
+  entries: KampusKoinEntry[]
+}
+
 export type OrderStatus = 'pending'
 
 export interface OrderItem {
@@ -221,7 +237,7 @@ export interface PlaceOrderInput {
   waUrl: string
 }
 
-export type NotificationKind = 'order-confirmed' | 'review-hook'
+export type NotificationKind = 'order-confirmed' | 'review-hook' | 'koin-earned'
 
 export interface AppNotification {
   id: string
@@ -250,6 +266,7 @@ export interface ApiClient {
   getLeaderboard(): Promise<LeaderboardEntry[]>
   getLeaderboardWeek(): Promise<string>
   submitReview(input: ReviewSubmissionInput): Promise<ReviewSubmission>
+  getKampusKoin(): Promise<KampusKoinState>
   getQuote(providerId: string, request: QuoteRequest): Promise<Quote | undefined>
   compareQuote(request: QuoteRequest): Promise<ComparisonResult>
   countPdfPages(pdf: PdfDescriptor): Promise<number>

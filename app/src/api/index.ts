@@ -3,6 +3,8 @@ import type {
   AppNotification,
   ComparisonResult,
   DueReviewHook,
+  KampusKoinEntry,
+  KampusKoinState,
   LeaderboardEntry,
   OrderItem,
   PdfDescriptor,
@@ -33,6 +35,9 @@ export type {
   ErrandKind,
   FareBand,
   ItemCas,
+  KampusKoinEntry,
+  KampusKoinKind,
+  KampusKoinState,
   LeaderboardEntry,
   NightCas,
   NotificationKind,
@@ -94,6 +99,32 @@ function simulateNetwork<T>(value: T): Promise<T> {
 const ORDERS_KEY = 'pilihjek-orders'
 const NOTIFICATIONS_KEY = 'pilihjek-notifications'
 const REVIEWS_KEY = 'pilihjek-reviews'
+const KOIN_KEY = 'pilihjek-koin'
+
+// Ulasan jujur = +50 KampusKoin (review.txt §6).
+export const REVIEW_KOIN_REWARD = 50
+// Saldo awal mock: bonus daftar + review pertama (seed 1×, seperti saved-places).
+const KOIN_SEED: KampusKoinState = {
+  balance: 128,
+  entries: [
+    {
+      id: 'KOIN-SEED-2',
+      kind: 'earn',
+      amount: 78,
+      reason: 'review',
+      note: 'Ulasan pertama — Kuy Jek ⭐',
+      at: Date.now() - 4 * 24 * 60 * 60 * 1000,
+    },
+    {
+      id: 'KOIN-SEED-1',
+      kind: 'earn',
+      amount: 50,
+      reason: 'signup',
+      note: 'Bonus daftar PilihJek 🎉',
+      at: Date.now() - 6 * 24 * 60 * 60 * 1000,
+    },
+  ],
+}
 
 // Review hook: 45 menit setelah order, mock "push" menawarkan review (+50 KampusKoin).
 const REVIEW_HOOK_MS = 45 * 60 * 1000
@@ -155,7 +186,29 @@ export class MockApiClient implements ApiClient {
       ...input,
     }
     writeStore(REVIEWS_KEY, [...readStore<ReviewSubmission[]>(REVIEWS_KEY, []), submission])
+    const koin = this.addKoin({
+      kind: 'earn',
+      amount: REVIEW_KOIN_REWARD,
+      reason: 'review',
+      note: `Ulasan ${input.providerName} ${input.providerEmoji} — +${REVIEW_KOIN_REWARD} KampusKoin`,
+    })
+    const notification: AppNotification = {
+      id: `NOT-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      kind: 'koin-earned',
+      title: `+${REVIEW_KOIN_REWARD} KampusKoin 🪙`,
+      body: `Ulasan ${input.providerName} terkirim — saldo kamu sekarang ${koin.balance}.`,
+      at: Date.now(),
+      read: false,
+    }
+    writeStore(NOTIFICATIONS_KEY, [
+      ...readStore<AppNotification[]>(NOTIFICATIONS_KEY, []),
+      notification,
+    ])
     return simulateNetwork(submission)
+  }
+
+  getKampusKoin(): Promise<KampusKoinState> {
+    return simulateNetwork(this.getKampusKoinStateSync())
   }
 
   getQuote(providerId: string, request: QuoteRequest): Promise<Quote | undefined> {
@@ -253,6 +306,28 @@ export class MockApiClient implements ApiClient {
       notification,
     ])
     return simulateNetwork(notification)
+  }
+
+  private addKoin(input: Omit<KampusKoinEntry, 'id' | 'at'>): KampusKoinState {
+    const current = this.getKampusKoinStateSync()
+    const entry: KampusKoinEntry = {
+      id: `KOIN-${Date.now()}-${Math.floor(Math.random() * 999)}`,
+      at: Date.now(),
+      ...input,
+    }
+    const next: KampusKoinState = {
+      balance: current.balance + entry.amount,
+      entries: [entry, ...current.entries],
+    }
+    writeStore(KOIN_KEY, next)
+    return next
+  }
+
+  private getKampusKoinStateSync(): KampusKoinState {
+    const state = readStore<KampusKoinState | null>(KOIN_KEY, null)
+    if (state) return state
+    writeStore(KOIN_KEY, KOIN_SEED)
+    return KOIN_SEED
   }
 }
 

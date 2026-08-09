@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '../components'
+import { KampusKoinCard } from '../flows/home/KampusKoinCard'
 import { WallOfFame } from '../flows/home/WallOfFame'
 
 export default function Home() {
@@ -22,6 +23,8 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      <KampusKoinCard />
 
       <WallOfFame />
     </div>

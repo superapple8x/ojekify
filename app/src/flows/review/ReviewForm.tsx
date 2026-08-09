@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import {
   api,
+  REVIEW_KOIN_REWARD,
   type ItemSafetyRating,
   type PriceHonestyRating,
   type Provider,
@@ -10,6 +11,7 @@ import {
 import { Button, Card, ProviderAvatar } from '../../components'
 import { cn } from '../../lib/cn'
 import { pushAppToast } from '../../hooks/useAppToasts'
+import { pushKoinChanged } from '../../hooks/useKampusKoin'
 
 interface PillarOption<T extends string> {
   id: T
@@ -152,6 +154,7 @@ export function ReviewForm({ provider }: { provider: Provider }) {
   const [tagIds, setTagIds] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [balance, setBalance] = useState<number | null>(null)
 
   const complete = speed !== null && itemSafety !== null && priceHonesty !== null && tagIds.length > 0
 
@@ -173,12 +176,15 @@ export function ReviewForm({ provider }: { provider: Provider }) {
         priceHonesty: priceHonesty!,
         tagIds,
       })
+      const koin = await api.getKampusKoin()
+      setBalance(koin.balance)
       setSubmitted(true)
       pushAppToast({
-        icon: '⭐',
-        title: `Ulasan untuk ${provider.name} terkirim`,
-        body: 'Nilai pilar & vibe tags kamu langsung masuk ke profil provider.',
+        icon: '🪙',
+        title: `+${REVIEW_KOIN_REWARD} KampusKoin`,
+        body: `Ulasan ${provider.name} terkirim — saldo kamu sekarang ${koin.balance.toLocaleString('id-ID')}.`,
       })
+      pushKoinChanged()
     } finally {
       setSubmitting(false)
     }
@@ -194,12 +200,18 @@ export function ReviewForm({ provider }: { provider: Provider }) {
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           Makasih, {provider.name}. Skor pilar & vibe tag kamu sudah masuk ke hitungan rating.
         </p>
+        <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-amber-300/60 bg-amber-50 px-4 py-2 text-sm font-extrabold text-amber-700 tabular-nums dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+          <span aria-hidden>🪙</span>
+          +{REVIEW_KOIN_REWARD} KampusKoin
+          {balance !== null && <span className="font-semibold">— saldo {balance.toLocaleString('id-ID')}</span>}
+        </div>
         <Button
           variant="outline"
           size="sm"
           className="mt-5"
           onClick={() => {
             setSubmitted(false)
+            setBalance(null)
             setSpeed(null)
             setItemSafety(null)
             setPriceHonesty(null)
