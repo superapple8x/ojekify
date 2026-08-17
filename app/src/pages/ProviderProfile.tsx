@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { api, type Provider, type ProviderReview, type ReviewPillars } from '../api'
+import { api, type IndividualReview, type Provider, type ProviderReview, type ReviewPillars } from '../api'
 import { ReviewForm } from '../flows/review/ReviewForm'
+import { ReviewFilters, applyReviewFilters, type ReviewFilterState } from '../flows/review/ReviewFilters'
+import { ReviewCard } from '../flows/review/ReviewCard'
 import { ReportIssueCard } from '../flows/review/ReportIssueCard'
 import { GhostWarningBanner } from '../flows/review/GhostWarningBanner'
 import {
@@ -37,10 +39,19 @@ const PILLAR_META: { key: keyof ReviewPillars; label: string; question: string; 
   },
 ]
 
+const DEFAULT_FILTERS: ReviewFilterState = {
+  serviceType: 'all',
+  context: [],
+  hasPhotos: false,
+  sort: 'newest',
+}
+
 export default function ProviderProfile() {
   const { id } = useParams<{ id: string }>()
   const [provider, setProvider] = useState<Provider | null>(null)
   const [review, setReview] = useState<ProviderReview | null>(null)
+  const [individualReviews, setIndividualReviews] = useState<IndividualReview[]>([])
+  const [filters, setFilters] = useState<ReviewFilterState>(DEFAULT_FILTERS)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -49,16 +60,26 @@ export default function ProviderProfile() {
     setLoading(true)
     setProvider(null)
     setReview(null)
-    Promise.all([api.getProvider(id), api.getReview(id)]).then(([found, foundReview]) => {
-      if (!alive) return
-      setProvider(found ?? null)
-      setReview(foundReview ?? null)
-      setLoading(false)
-    })
+    setIndividualReviews([])
+    setFilters(DEFAULT_FILTERS)
+    Promise.all([api.getProvider(id), api.getReview(id), api.getIndividualReviews(id)]).then(
+      ([found, foundReview, foundIndividual]) => {
+        if (!alive) return
+        setProvider(found ?? null)
+        setReview(foundReview ?? null)
+        setIndividualReviews(foundIndividual)
+        setLoading(false)
+      },
+    )
     return () => {
       alive = false
     }
   }, [id])
+
+  const filteredReviews = useMemo(
+    () => applyReviewFilters(individualReviews, filters),
+    [individualReviews, filters],
+  )
 
   if (loading) {
     return (
@@ -249,6 +270,34 @@ export default function ProviderProfile() {
       <ReviewForm provider={provider} />
 
       <ReportIssueCard provider={provider} review={review} />
+
+      {/* Individual Reviews with Filters */}
+      <Card padding="lg">
+        <h2 className="flex items-center gap-2 text-sm font-extrabold">
+          <span aria-hidden>💬</span> Ulasan Mahasiswa
+        </h2>
+        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+          {individualReviews.length} ulasan dari mahasiswa yang pernah pakai {provider.name}.
+        </p>
+
+        <div className="mt-4">
+          <ReviewFilters filters={filters} onFiltersChange={setFilters} />
+        </div>
+
+        <div className="mt-4 space-y-3">
+          {filteredReviews.length > 0 ? (
+            filteredReviews.map((r) => (
+              <ReviewCard key={r.id} review={r} providerTags={provider.tags} />
+            ))
+          ) : (
+            <EmptyState
+              icon="🔍"
+              title="Tidak ada ulasan"
+              description="Tidak ada ulasan yang cocok dengan filter yang dipilih."
+            />
+          )}
+        </div>
+      </Card>
     </div>
   )
 }
