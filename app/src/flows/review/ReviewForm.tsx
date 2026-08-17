@@ -175,6 +175,18 @@ export function ReviewForm({ provider }: { provider: Provider }) {
         itemSafety: itemSafety!,
         priceHonesty: priceHonesty!,
         tagIds,
+        serviceType: 'ride',
+        orderTime: Date.now(),
+        weather: 'cerah',
+        pickupZone: '',
+        dropoffZone: '',
+        driverName: '',
+        adminResponseMinutes: 0,
+        photos: [],
+        textReview: '',
+        anonymous: false,
+        priceMatch: true,
+        priceNote: '',
       })
       const koin = await api.getKampusKoin()
       setBalance(koin.balance)

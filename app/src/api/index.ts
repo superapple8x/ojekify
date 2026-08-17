@@ -43,6 +43,7 @@ export type {
   DueReviewHook,
   ErrandKind,
   FareBand,
+  IndividualReview,
   ItemCas,
   KampusKoinEntry,
   KampusKoinKind,

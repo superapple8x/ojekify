@@ -173,12 +173,26 @@ export interface ReviewSubmissionInput {
   itemSafety: ItemSafetyRating
   priceHonesty: PriceHonestyRating
   tagIds: string[]
+  serviceType: ServiceId
+  orderTime: number
+  weather: string
+  pickupZone: string
+  dropoffZone: string
+  driverName: string
+  adminResponseMinutes: number
+  photos: string[]
+  textReview: string
+  anonymous: boolean
+  priceMatch: boolean
+  priceNote: string
 }
 
 export interface ReviewSubmission extends ReviewSubmissionInput {
   id: string
   createdAt: number
 }
+
+export interface IndividualReview extends ReviewSubmission {}
 
 export interface LeaderboardEntry {
   rank: number
