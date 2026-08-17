@@ -5,6 +5,7 @@ import type {
   DisputeReport,
   DisputeSubmissionInput,
   DueReviewHook,
+  IndividualReview,
   KampusKoinEntry,
   KampusKoinState,
   LeaderboardEntry,
@@ -27,7 +28,7 @@ import type {
 import { PROVIDERS, SERVICES } from './providers'
 import { ZONES } from './zones'
 import { compareQuotes, computeQuote } from './priceEngine'
-import { LEADERBOARD, LEADERBOARD_WEEK, REVIEWS } from './reviews'
+import { LEADERBOARD, LEADERBOARD_WEEK, REVIEWS, INDIVIDUAL_REVIEWS } from './reviews'
 import { mockPdfPageCount, mockPrintFileLink } from './print'
 
 export type {
@@ -92,7 +93,7 @@ export type {
 export { ZONES, ZONES_BY_ID, getZone } from './zones'
 export { PROVIDERS, PROVIDERS_BY_ID, SERVICES, ERRAND_KINDS, VIBE_TAGS } from './providers'
 export { computeQuote, compareQuotes, distanceKm, getQuote } from './priceEngine'
-export { REVIEWS, REVIEWS_BY_PROVIDER, LEADERBOARD, LEADERBOARD_WEEK } from './reviews'
+export { REVIEWS, REVIEWS_BY_PROVIDER, INDIVIDUAL_REVIEWS, LEADERBOARD, LEADERBOARD_WEEK } from './reviews'
 export { BINDINGS, BINDINGS_BY_ID, COLOR_MODES, DEFAULT_PRINT_DRAFT, PAPER_SIZES, PAPER_WEIGHTS, PRINT_PARTNER, PRINT_RATES, estimatePrintDeliveryFee, estimatePrintJob, mockPrintFileLink } from './print'
 export type { PrintDeliveryEstimate, PrintJobEstimate } from './print'
 
@@ -113,6 +114,7 @@ function simulateNetwork<T>(value: T): Promise<T> {
 const ORDERS_KEY = 'pilihjek-orders'
 const NOTIFICATIONS_KEY = 'pilihjek-notifications'
 const REVIEWS_KEY = 'pilihjek-reviews'
+const INDIVIDUAL_REVIEWS_KEY = 'pilihjek-individual-reviews'
 const KOIN_KEY = 'pilihjek-koin'
 const DISPUTES_KEY = 'pilihjek-disputes'
 const VOUCHERS_KEY = 'pilihjek-vouchers'
@@ -286,6 +288,13 @@ export class MockApiClient implements ApiClient {
     return simulateNetwork(REVIEWS.find((review) => review.providerId === providerId))
   }
 
+  getIndividualReviews(providerId: string): Promise<IndividualReview[]> {
+    const stored = readStore<IndividualReview[]>(INDIVIDUAL_REVIEWS_KEY, [])
+    const seeded = INDIVIDUAL_REVIEWS.filter((r) => r.providerId === providerId)
+    const merged = [...seeded, ...stored.filter((r) => r.providerId === providerId)]
+    return simulateNetwork(merged)
+  }
+
   getLeaderboard(): Promise<LeaderboardEntry[]> {
     return simulateNetwork(LEADERBOARD)
   }
@@ -301,6 +310,7 @@ export class MockApiClient implements ApiClient {
       ...input,
     }
     writeStore(REVIEWS_KEY, [...readStore<ReviewSubmission[]>(REVIEWS_KEY, []), submission])
+    writeStore(INDIVIDUAL_REVIEWS_KEY, [...readStore<IndividualReview[]>(INDIVIDUAL_REVIEWS_KEY, []), submission])
     const koin = this.addKoin({
       kind: 'earn',
       amount: REVIEW_KOIN_REWARD,

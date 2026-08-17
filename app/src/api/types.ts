@@ -324,6 +324,7 @@ export interface ApiClient {
   getProvider(id: string): Promise<Provider | undefined>
   getReviews(): Promise<ProviderReview[]>
   getReview(providerId: string): Promise<ProviderReview | undefined>
+  getIndividualReviews(providerId: string): Promise<IndividualReview[]>
   getLeaderboard(): Promise<LeaderboardEntry[]>
   getLeaderboardWeek(): Promise<string>
   submitReview(input: ReviewSubmissionInput): Promise<ReviewSubmission>
