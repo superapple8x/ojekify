@@ -25,4 +25,5 @@ export {
 } from './ProviderAvatar'
 export { ToastStack, type ToastData, type ToastStackProps } from './ToastStack'
 export { MapCanvas, type MapCanvasProps } from './map/MapCanvas'
+export { LocationPicker, type LocationPickerProps } from './map/LocationPicker'
 export { LocationPickerSheet, type LocationPickerSheetProps } from './map/LocationPickerSheet'
