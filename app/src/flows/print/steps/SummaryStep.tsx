@@ -14,7 +14,7 @@ import { buildWaLink, copyToClipboard } from '../../../lib/wa'
 import { formatIDR } from '../../../lib/format'
 import { pushAppToast } from '../../../hooks/useAppToasts'
 import { pushOrdersChanged } from '../../../hooks/useOrders'
-import { Button } from '../../../components'
+import { Button, LocationPicker } from '../../../components'
 
 export interface SummaryStepProps {
   file: PrintUpload
@@ -74,6 +74,9 @@ export function SummaryStep({
 
   const deliverToZone = deliverTo ? zones.find((zone) => zone.id === deliverTo.zoneId) : undefined
   const deliverToLabel = deliverTo?.label ?? deliverToZone?.name ?? ''
+  const deliverToRichName = deliverTo
+    ? `${deliverTo.label}${deliverTo.detail ? ` (${deliverTo.detail})` : ''}`
+    : deliverToZone?.name ?? ''
   const estimate = useMemo(
     () => estimatePrintJob({ colorMode, mixedBwEnd, binding, pageCount }, deliverToZone),
     [colorMode, mixedBwEnd, binding, pageCount, deliverToZone],
@@ -92,10 +95,10 @@ export function SummaryStep({
         : `Pages 1-${estimate.bwPages} (Hitam Putih), Pages ${estimate.bwPages + 1}-${pageCount} (Warna)`
 
   const message = useMemo(() => {
-    if (!customerName.trim() || !deliverTo || !deliverToZone || !fileLink) return ''
+    if (!customerName.trim() || !deliverTo || !fileLink) return ''
     return buildPrintWaMessage({
       customerName: customerName.trim(),
-      deliverToName: deliverToLabel || deliverToZone.name,
+      deliverToName: deliverToRichName || deliverToLabel || deliverToZone?.name || '',
       fileName: file.name,
       pageCount,
       paperLabel,
@@ -107,7 +110,7 @@ export function SummaryStep({
       deliveryFee: estimate.deliveryFee.total,
       total: estimate.total,
     })
-  }, [customerName, deliverTo, deliverToZone, deliverToLabel, fileLink, file.name, pageCount, paperLabel, weightLabel, colorLabel, finishingLabel, estimate])
+  }, [customerName, deliverTo, deliverToRichName, deliverToLabel, deliverToZone, fileLink, file.name, pageCount, paperLabel, weightLabel, colorLabel, finishingLabel, estimate])
 
   const waLink = useMemo(
     () => (message ? buildWaLink(PRINT_PARTNER.phone, message) : ''),
@@ -125,7 +128,7 @@ export function SummaryStep({
   }
 
   const handleOrder = async () => {
-    if (!deliverTo || !deliverToZone || !message || !waLink || opening) return
+    if (!deliverTo || !message || !waLink || opening) return
     setOpening(true)
     try {
       const order = await api.placeOrder({
@@ -134,7 +137,7 @@ export function SummaryStep({
         providerEmoji: PRINT_PARTNER.emoji,
         serviceLabel: 'Cetak & Antar',
         pickupName: 'Fotokopian Campus',
-        dropoffName: deliverToLabel || deliverToZone.name,
+        dropoffName: deliverToRichName || deliverToLabel || deliverToZone?.name || '',
         total: estimate.total,
         waUrl: waLink,
       })
@@ -142,7 +145,7 @@ export function SummaryStep({
       pushAppToast({
         icon: '🖨️',
         title: 'Order Cetak & Antar tercatat',
-        body: `Ada ambil dari fotokopian & antar ke ${deliverToLabel || deliverToZone.name} — kamu akan diingatkan menilai 45 menit lagi.`,
+        body: `Ada ambil dari fotokopian & antar ke ${deliverToRichName || deliverToLabel || deliverToZone?.name || ''} — kamu akan diingatkan menilai 45 menit lagi.`,
       })
       pushOrdersChanged()
       window.open(waLink, '_blank', 'noopener,noreferrer')
@@ -150,9 +153,6 @@ export function SummaryStep({
       setOpening(false)
     }
   }
-
-  const kampusZones = zones.filter((zone) => zone.area === 'kampus')
-  const luarZones = zones.filter((zone) => zone.area === 'luar')
 
   return (
     <div className="space-y-5">
@@ -176,7 +176,7 @@ export function SummaryStep({
           </div>
           <div className="border-t border-dashed border-neutral-200 dark:border-neutral-700" />
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-neutral-600 dark:text-neutral-300">Ongkir ke {deliverTo ? deliverToLabel || deliverToZone?.name : 'zona tujuan'}</span>
+            <span className="text-neutral-600 dark:text-neutral-300">Ongkir ke {deliverTo?.label ?? deliverToZone?.name ?? 'zona tujuan'}</span>
             <span className="font-bold tabular-nums">{formatIDR(estimate.deliveryFee.total)}</span>
           </div>
           <div className="flex items-baseline justify-between gap-3">
@@ -193,60 +193,19 @@ export function SummaryStep({
         </div>
       </div>
 
-      <div className="space-y-3">
-        <label className="block space-y-1.5">
-          <span className="text-sm font-semibold">Antar ke mana? 📍</span>
-          <div className="relative">
-            <select
-              value={deliverTo?.zoneId ?? ''}
-              onChange={(event) => {
-                const id = event.target.value
-                if (!id) {
-                  onChange({ deliverTo: null })
-                  return
-                }
-                const zone = zones.find((z) => z.id === id)
-                if (!zone) {
-                  onChange({ deliverTo: null })
-                  return
-                }
-                onChange({
-                  deliverTo: {
-                    label: zone.name,
-                    lat: zone.lat,
-                    lng: zone.lng,
-                    zoneId: zone.id,
-                    source: 'zone',
-                  },
-                })
-              }}
-              className="h-12 w-full appearance-none rounded-xl border-2 border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-900 transition-colors focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
-            >
-              <option value="">Pilih zona tujuan…</option>
-              {kampusZones.length > 0 && (
-                <optgroup label="Dalam Kampus">
-                  {kampusZones.map((zone) => (
-                    <option key={zone.id} value={zone.id}>
-                      {zone.emoji} {zone.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-              {luarZones.length > 0 && (
-                <optgroup label="Luar Kampus">
-                  {luarZones.map((zone) => (
-                    <option key={zone.id} value={zone.id}>
-                      {zone.emoji} {zone.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
-            <span aria-hidden className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-neutral-400">
-              ▾
-            </span>
-          </div>
-        </label>
+      <div className="space-y-1.5">
+        <span className="text-sm font-semibold">Antar ke mana? 📍</span>
+        <LocationPicker
+          id="deliver-to"
+          value={deliverTo}
+          onChange={(next) => onChange({ deliverTo: next })}
+          placeholder="Pilih lokasi antar…"
+          title="Pilih lokasi antar"
+        />
+        <p className="text-[11px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+          Cari alamat, geser pin di peta, pakai GPS, atau pilih zona populer — tarif tetap dihitung dari zona
+          terdekat.
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -324,7 +283,7 @@ export function SummaryStep({
             {!customerName.trim()
               ? 'Isi nama dulu ya — wajib untuk template ini.'
               : !deliverTo
-                ? 'Pilih zona tujuan biar estimasi ongkir & pesan lengkap.'
+                ? 'Pilih lokasi tujuan biar estimasi ongkir & pesan lengkap.'
                 : 'Buat link aman dulu — tunggu sebentar…'}
           </p>
         )}
