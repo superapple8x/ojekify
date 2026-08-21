@@ -1,4 +1,4 @@
-import type { Provider, Quote, WaFieldId, WaTemplate } from '../api'
+import type { Provider, Quote, SelectedPlace, WaFieldId, WaTemplate } from '../api'
 import { formatIDR } from './format'
 
 export const WA_FIELD_LABELS: Record<WaFieldId, string> = {
@@ -16,10 +16,17 @@ export type WaMessageInput = {
   serviceLabel: string
   pickupName: string
   dropoffName: string
+  pickupPlace?: SelectedPlace | null
+  dropoffPlace?: SelectedPlace | null
   paymentLabel: string
   customerName?: string
   itemCount?: number
   notes?: string
+}
+
+function formatPlaceWithMapsLink(place: SelectedPlace): string {
+  const head = place.detail ? `${place.label} — ${place.detail}` : place.label
+  return `${head}\n🗺️ https://maps.google.com/?q=${place.lat},${place.lng}`
 }
 
 function fieldValue(field: WaFieldId, input: WaMessageInput): string | undefined {
@@ -27,8 +34,10 @@ function fieldValue(field: WaFieldId, input: WaMessageInput): string | undefined
     case 'service':
       return input.serviceLabel
     case 'pickup':
+      if (input.pickupPlace) return formatPlaceWithMapsLink(input.pickupPlace)
       return input.pickupName
     case 'dropoff':
+      if (input.dropoffPlace) return formatPlaceWithMapsLink(input.dropoffPlace)
       return input.dropoffName
     case 'payment':
       return input.paymentLabel

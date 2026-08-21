@@ -26,6 +26,8 @@ export function ProviderSheet({
   service,
   pickup,
   dropoff,
+  pickupPlace,
+  dropoffPlace,
   paymentLabel,
   errandLabel,
   itemCount,
@@ -47,6 +49,23 @@ export function ProviderSheet({
     setPlacedOrderId(null)
   }, [provider?.id])
 
+  const pickupHistoryName = pickupPlace
+    ? `${pickupPlace.label}${pickupPlace.detail ? ` (${pickupPlace.detail})` : ''}`
+    : (pickup?.name ?? '')
+  const dropoffHistoryName = dropoffPlace
+    ? `${dropoffPlace.label}${dropoffPlace.detail ? ` (${dropoffPlace.detail})` : ''}`
+    : (dropoff?.name ?? '')
+  const pickupUiLabel = pickupPlace?.label
+    ? `${pickup?.emoji ? `${pickup.emoji} ` : ''}${pickupPlace.label}`.trim()
+    : pickup
+      ? `${pickup.emoji} ${pickup.name}`
+      : ''
+  const dropoffUiLabel = dropoffPlace?.label
+    ? `${dropoff?.emoji ? `${dropoff.emoji} ` : ''}${dropoffPlace.label}`.trim()
+    : dropoff
+      ? `${dropoff.emoji} ${dropoff.name}`
+      : ''
+
   const message = useMemo(() => {
     if (!provider || !quote || !service || !pickup || !dropoff) return ''
     if (provider.waTemplate.needsName && !name.trim()) return ''
@@ -55,13 +74,29 @@ export function ProviderSheet({
       quote,
       serviceLabel:
         errandLabel && service.id === 'jasa' ? `${service.label} (${errandLabel})` : service.label,
-      pickupName: pickup.name,
-      dropoffName: dropoff.name,
+      pickupName: pickupHistoryName,
+      dropoffName: dropoffHistoryName,
+      pickupPlace: pickupPlace ?? null,
+      dropoffPlace: dropoffPlace ?? null,
       paymentLabel,
       customerName: name,
       itemCount,
     })
-  }, [provider, quote, service, pickup, dropoff, errandLabel, paymentLabel, itemCount, name])
+  }, [
+    provider,
+    quote,
+    service,
+    pickup,
+    dropoff,
+    pickupPlace,
+    dropoffPlace,
+    pickupHistoryName,
+    dropoffHistoryName,
+    errandLabel,
+    paymentLabel,
+    itemCount,
+    name,
+  ])
 
   const waLink = useMemo(() => {
     if (!provider || !message) return ''
@@ -105,8 +140,8 @@ export function ProviderSheet({
         providerEmoji: provider.emoji,
         serviceLabel:
           errandLabel && service.id === 'jasa' ? `${service.label} (${errandLabel})` : service.label,
-        pickupName: pickup.name,
-        dropoffName: dropoff.name,
+        pickupName: pickupHistoryName,
+        dropoffName: dropoffHistoryName,
         total: quote.total,
         waUrl: waLink,
       })
@@ -114,7 +149,7 @@ export function ProviderSheet({
       pushAppToast({
         icon: '📦',
         title: 'Order tercatat di riwayat',
-        body: `${service.emoji} ${service.label} • ${pickup.emoji} ${pickup.name} → ${dropoff.emoji} ${dropoff.name} via ${provider.name} — kamu akan diingatkan menilai 45 menit lagi.`,
+        body: `${service.emoji} ${service.label} • ${pickupUiLabel} → ${dropoffUiLabel} via ${provider.name} — kamu akan diingatkan menilai 45 menit lagi.`,
       })
       pushOrdersChanged()
       window.open(waLink, '_blank', 'noopener,noreferrer')
@@ -195,9 +230,8 @@ export function ProviderSheet({
 
           <p className="rounded-xl bg-neutral-100 px-3 py-2 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
             {service.emoji} {service.label}
-            {errandLabel && service.id === 'jasa' ? ` (${errandLabel})` : ''} · {pickup.emoji}{' '}
-            {pickup.name} → {dropoff.emoji} {dropoff.name} · {formatKm(quote.distanceKm)} ·{' '}
-            {paymentLabel}
+            {errandLabel && service.id === 'jasa' ? ` (${errandLabel})` : ''} · {pickupUiLabel} →{' '}
+            {dropoffUiLabel} · {formatKm(quote.distanceKm)} · {paymentLabel}
             {itemCount ? ` · ${itemCount} item` : ''}
           </p>
 
