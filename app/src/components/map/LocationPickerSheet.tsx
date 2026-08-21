@@ -186,14 +186,17 @@ export function LocationPickerSheet({
       const saved = places.find((p) => p.id === savedId)
       if (!saved) return
       const zone = ZONES_BY_ID[saved.zoneId]
-      // migration: old SavedPlace has no lat/lng — fallback to zone coords
-      // new shape will have lat/lng on the SelectedPlace itself
-      const pos = zone ? { lat: zone.lat, lng: zone.lng } : CAMPUS_CENTER
+      const pos =
+        typeof saved.lat === 'number' && typeof saved.lng === 'number'
+          ? { lat: saved.lat, lng: saved.lng }
+          : zone
+            ? { lat: zone.lat, lng: zone.lng }
+            : CAMPUS_CENTER
       setMarker(pos)
       setMapCenter(pos)
-      setPending({ label: saved.label, detail: zone?.name, lat: pos.lat, lng: pos.lng })
+      setPending({ label: saved.label, detail: saved.detail ?? zone?.name, lat: pos.lat, lng: pos.lng })
       setPendingSource('saved')
-      setReverseDetail(zone?.name)
+      setReverseDetail(saved.detail ?? zone?.name)
     },
     [places],
   )
