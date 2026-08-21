@@ -1,9 +1,9 @@
-import type { PriceConditions, ServiceExtras, ServiceId } from '../../api'
+import type { PriceConditions, SelectedPlace, ServiceExtras, ServiceId } from '../../api'
 
 export interface ComparatorDraft {
   service: ServiceId | null
-  pickupZoneId: string
-  dropoffZoneId: string
+  pickup: SelectedPlace | null
+  dropoff: SelectedPlace | null
   raining: boolean
   cashless: boolean
   forceNight: boolean

@@ -51,11 +51,11 @@ export function ResultsView({ draft, hour, onEditRequest }: ResultsViewProps) {
   const [waRow, setWaRow] = useState<ComparisonRow | null>(null)
 
   const request: QuoteRequest | null = useMemo(() => {
-    if (!draft.service) return null
+    if (!draft.service || !draft.pickup || !draft.dropoff) return null
     return {
       service: draft.service,
-      pickupZoneId: draft.pickupZoneId,
-      dropoffZoneId: draft.dropoffZoneId,
+      pickupZoneId: draft.pickup.zoneId,
+      dropoffZoneId: draft.dropoff.zoneId,
       conditions: conditionsFromDraft(draft, hour),
       extras: draft.extras,
     }
@@ -98,8 +98,8 @@ export function ResultsView({ draft, hour, onEditRequest }: ResultsViewProps) {
   }, [rows, sort, noHiddenOnly])
 
   const service = services.find((entry) => entry.id === draft.service)
-  const pickup = zones.find((zone) => zone.id === draft.pickupZoneId)
-  const dropoff = zones.find((zone) => zone.id === draft.dropoffZoneId)
+  const pickup = zones.find((zone) => zone.id === draft.pickup?.zoneId)
+  const dropoff = zones.find((zone) => zone.id === draft.dropoff?.zoneId)
   const errandKind = ERRAND_KINDS.find((kind) => kind.id === draft.extras.errandKind)
   const paymentLabel = draft.cashless ? 'Non-tunai' : 'Tunai'
   const itemCount = draft.extras.itemCount ?? 0

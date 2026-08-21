@@ -1,15 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api, distanceKm } from '../../../api'
-import type { Zone } from '../../../api'
+import type { SelectedPlace, Zone } from '../../../api'
 import { formatKm } from '../../../lib/format'
 import { cn } from '../../../lib/cn'
 import { Button, Chip } from '../../../components'
 import { useSavedPlaces } from '../../../hooks/useSavedPlaces'
 
 export interface RouteStepProps {
-  pickupZoneId: string
-  dropoffZoneId: string
-  onChange: (pickup: string, dropoff: string) => void
+  pickup: SelectedPlace | null
+  dropoff: SelectedPlace | null
+  onChange: (pickup: SelectedPlace | null, dropoff: SelectedPlace | null) => void
+}
+
+function zoneToPlace(zone: Zone): SelectedPlace {
+  return {
+    label: zone.name,
+    lat: zone.lat,
+    lng: zone.lng,
+    zoneId: zone.id,
+    source: 'zone',
+  }
 }
 
 const selectClasses = [
@@ -18,7 +28,7 @@ const selectClasses = [
   'disabled:opacity-50',
 ].join(' ')
 
-export function RouteStep({ pickupZoneId, dropoffZoneId, onChange }: RouteStepProps) {
+export function RouteStep({ pickup, dropoff: dropoffPlace, onChange }: RouteStepProps) {
   const [zones, setZones] = useState<Zone[]>([])
   const { places, savePlace, removePlace } = useSavedPlaces()
   const [placeLabel, setPlaceLabel] = useState('')
@@ -40,10 +50,12 @@ export function RouteStep({ pickupZoneId, dropoffZoneId, onChange }: RouteStepPr
     ]
   }, [zones])
 
+  const pickupZoneId = pickup?.zoneId ?? ''
+  const dropoffZoneId = dropoffPlace?.zoneId ?? ''
   const bothChosen = Boolean(pickupZoneId && dropoffZoneId)
   const sameZone = bothChosen && pickupZoneId === dropoffZoneId
-  const pickup = zones.find((zone) => zone.id === pickupZoneId)
-  const dropoff = zones.find((zone) => zone.id === dropoffZoneId)
+  const pickupZone = zones.find((zone) => zone.id === pickupZoneId)
+  const dropoffZone = zones.find((zone) => zone.id === dropoffZoneId)
 
   return (
     <div className="space-y-5">
@@ -54,9 +66,9 @@ export function RouteStep({ pickupZoneId, dropoffZoneId, onChange }: RouteStepPr
         </p>
       )}
 
-      {bothChosen && !sameZone && pickup && dropoff && (
+      {bothChosen && !sameZone && pickupZone && dropoffZone && (
         <p className="rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
-          {pickup.emoji} {pickup.name} → {dropoff.emoji} {dropoff.name} ± {formatKm(distanceKm(pickup, dropoff))}
+          {pickupZone.emoji} {pickupZone.name} → {dropoffZone.emoji} {dropoffZone.name} ± {formatKm(distanceKm(pickupZone, dropoffZone))}
         </p>
       )}
 
@@ -78,7 +90,17 @@ export function RouteStep({ pickupZoneId, dropoffZoneId, onChange }: RouteStepPr
                 <Chip
                   key={place.id}
                   selected={pickupZoneId === place.zoneId}
-                  onClick={() => onChange(place.zoneId, dropoffZoneId)}
+                  onClick={() => {
+                    const next: SelectedPlace = {
+                      label: place.label,
+                      detail: place.detail,
+                      lat: place.lat,
+                      lng: place.lng,
+                      zoneId: place.zoneId,
+                      source: 'saved',
+                    }
+                    onChange(next, dropoffPlace)
+                  }}
                   onRemove={() => removePlace(place.id)}
                   icon={<span aria-hidden>{zone?.emoji ?? '📍'}</span>}
                 >
@@ -101,7 +123,10 @@ export function RouteStep({ pickupZoneId, dropoffZoneId, onChange }: RouteStepPr
             <select
               id="pickup"
               value={pickupZoneId}
-              onChange={(e) => onChange(e.target.value, dropoffZoneId)}
+              onChange={(e) => {
+                const zone = zones.find((z) => z.id === e.target.value)
+                onChange(zone ? zoneToPlace(zone) : null, dropoffPlace)
+              }}
               className={cn(selectClasses, pickupZoneId === '' && 'text-neutral-400 dark:text-neutral-500')}
             >
               <option value="">Pilih zona…</option>
@@ -127,7 +152,10 @@ export function RouteStep({ pickupZoneId, dropoffZoneId, onChange }: RouteStepPr
             <select
               id="dropoff"
               value={dropoffZoneId}
-              onChange={(e) => onChange(pickupZoneId, e.target.value)}
+              onChange={(e) => {
+                const zone = zones.find((z) => z.id === e.target.value)
+                onChange(pickup, zone ? zoneToPlace(zone) : null)
+              }}
               className={cn(selectClasses, dropoffZoneId === '' && 'text-neutral-400 dark:text-neutral-400')}
             >
               <option value="">Pilih zona…</option>
@@ -151,19 +179,19 @@ export function RouteStep({ pickupZoneId, dropoffZoneId, onChange }: RouteStepPr
       {bothChosen && !sameZone && (
         <button
           type="button"
-          onClick={() => onChange(dropoffZoneId, pickupZoneId)}
+          onClick={() => onChange(dropoffPlace, pickup)}
           className="inline-flex items-center gap-1.5 rounded-full border-2 border-neutral-200 px-3.5 py-1.5 text-xs font-semibold transition-colors hover:border-brand-400 hover:text-brand-600 dark:border-neutral-800 dark:hover:border-brand-500/50 dark:hover:text-brand-300"
         >
           ⇄ Tukar jemput & antar
         </button>
       )}
 
-      {pickup && (
+      {pickupZone && pickup && (
         <form
           className="flex flex-col gap-2 rounded-2xl border-2 border-dashed border-neutral-200 p-3.5 dark:border-neutral-800 sm:flex-row sm:items-center"
           onSubmit={(event) => {
             event.preventDefault()
-            savePlace(placeLabel || pickup.name, pickup.id)
+            savePlace(placeLabel || pickup.label, pickup)
             setPlaceLabel('')
           }}
         >
@@ -175,7 +203,7 @@ export function RouteStep({ pickupZoneId, dropoffZoneId, onChange }: RouteStepPr
             type="text"
             value={placeLabel}
             onChange={(event) => setPlaceLabel(event.target.value)}
-            placeholder={`Label, mis. "${pickup.name}"`}
+            placeholder={`Label, mis. "${pickup.label}"`}
             className="h-10 w-full flex-1 rounded-xl border-2 border-neutral-200 bg-white px-3.5 text-sm font-semibold text-neutral-900 transition-colors focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
           <Button size="sm" className="shrink-0" disabled={!pickupZoneId}>

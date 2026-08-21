@@ -15,8 +15,8 @@ import type { ServiceId } from '../api'
 
 const EMPTY_DRAFT: ComparatorDraft = {
   service: null,
-  pickupZoneId: '',
-  dropoffZoneId: '',
+  pickup: null,
+  dropoff: null,
   raining: false,
   cashless: false,
   forceNight: false,
@@ -32,7 +32,7 @@ const STEPS: { title: string; subtitle: string }[] = [
   },
   {
     title: 'Rute jemput-antar',
-    subtitle: 'Pilih zona dari daftar yang sudah dipetakan ke tarif provider.',
+    subtitle: 'Pilih lokasi jemput dan antar — tarif tetap dihitung dari zona terdekat.',
   },
   {
     title: 'Ketentuan pengantaran',
@@ -61,13 +61,13 @@ export default function Comparator() {
 
   const canContinue =
     step === 0 ? draft.service !== null :
-    step === 1 ? Boolean(draft.pickupZoneId && draft.dropoffZoneId && draft.pickupZoneId !== draft.dropoffZoneId) :
+    step === 1 ? Boolean(draft.pickup && draft.dropoff && draft.pickup.zoneId !== draft.dropoff.zoneId) :
     step === 2 ? true :
     true
 
   const continueHint =
     step === 0 && !draft.service ? 'Pilih salah satu layanan dulu.' :
-    step === 1 && !canContinue ? (draft.pickupZoneId && draft.pickupZoneId === draft.dropoffZoneId ? 'Jemput & antar tidak boleh sama.' : 'Pilih zona jemput dan zona antar.') :
+    step === 1 && !canContinue ? (draft.pickup && draft.dropoff && draft.pickup.zoneId === draft.dropoff.zoneId ? 'Jemput & antar tidak boleh sama.' : 'Pilih lokasi jemput dan lokasi antar.') :
     undefined
 
   const title = STEPS[step].title
@@ -116,9 +116,9 @@ export default function Comparator() {
           )}
           {step === 1 && (
             <RouteStep
-              pickupZoneId={draft.pickupZoneId}
-              dropoffZoneId={draft.dropoffZoneId}
-              onChange={(pickup, dropoff) => setDraft((current) => ({ ...current, pickupZoneId: pickup, dropoffZoneId: dropoff }))}
+              pickup={draft.pickup}
+              dropoff={draft.dropoff}
+              onChange={(pickup, dropoff) => setDraft((current) => ({ ...current, pickup, dropoff }))}
             />
           )}
           {step === 2 && (
