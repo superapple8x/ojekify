@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -113,4 +114,13 @@
   *::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
+}
+
+/* Leaflet: keep panes/controls under app Modal (z-50). Default pane
+   z-indices are 200–700 which bleed over portals; lowering to 1 keeps
+   relative order via DOM while staying beneath our stacking context. */
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1 !important;
 }
