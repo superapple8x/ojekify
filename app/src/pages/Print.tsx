@@ -104,7 +104,7 @@ export default function Print() {
             weight={draft.weight}
             binding={draft.binding}
             customerName={draft.customerName}
-            deliverToZoneId={draft.deliverToZoneId}
+            deliverTo={draft.deliverTo}
             onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
           />
         ) : null}

@@ -1,5 +1,5 @@
 import { DEFAULT_PRINT_DRAFT } from '../../api'
-import type { BindingId, PaperSizeId, PaperWeightId, PrintColorMode } from '../../api'
+import type { BindingId, PaperSizeId, PaperWeightId, PrintColorMode, SelectedPlace } from '../../api'
 
 export interface PrintUpload {
   name: string
@@ -17,8 +17,8 @@ export interface PrintDraft {
   binding: BindingId
   /** Nama + fakultas untuk template order whatsapp cetak & antar. */
   customerName: string
-  /** Zona tujuan antar hasil cetak, dipakai untuk estimasi ongkir. */
-  deliverToZoneId: string
+  /** Tujuan antar hasil cetak — tarif tetap dihitung dari zona terdekat (`zoneId`). */
+  deliverTo: SelectedPlace | null
 }
 
 export const EMPTY_PRINT_DRAFT: PrintDraft = {
@@ -26,7 +26,7 @@ export const EMPTY_PRINT_DRAFT: PrintDraft = {
   ...DEFAULT_PRINT_DRAFT,
   mixedBwEnd: 0,
   customerName: '',
-  deliverToZoneId: '',
+  deliverTo: null,
 }
 
 export const PRINT_STEP_LABELS = ['File', 'Pengaturan', 'Ringkasan'] as const

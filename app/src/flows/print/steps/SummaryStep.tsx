@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Zone } from '../../../api'
+import type { SelectedPlace, Zone } from '../../../api'
 import {
   BINDINGS_BY_ID,
   PAPER_SIZES,
@@ -25,8 +25,8 @@ export interface SummaryStepProps {
   weight: '70' | '80'
   binding: 'none' | 'staples' | 'tape' | 'spiral'
   customerName: string
-  deliverToZoneId: string
-  onChange: (patch: Partial<{ customerName: string; deliverToZoneId: string }>) => void
+  deliverTo: SelectedPlace | null
+  onChange: (patch: Partial<{ customerName: string; deliverTo: SelectedPlace | null }>) => void
 }
 
 export function SummaryStep({
@@ -38,7 +38,7 @@ export function SummaryStep({
   weight,
   binding,
   customerName,
-  deliverToZoneId,
+  deliverTo,
   onChange,
 }: SummaryStepProps) {
   const [zones, setZones] = useState<Zone[]>([])
@@ -72,10 +72,11 @@ export function SummaryStep({
     }
   }, [])
 
-  const deliverTo = zones.find((zone) => zone.id === deliverToZoneId)
+  const deliverToZone = deliverTo ? zones.find((zone) => zone.id === deliverTo.zoneId) : undefined
+  const deliverToLabel = deliverTo?.label ?? deliverToZone?.name ?? ''
   const estimate = useMemo(
-    () => estimatePrintJob({ colorMode, mixedBwEnd, binding, pageCount }, deliverTo),
-    [colorMode, mixedBwEnd, binding, pageCount, deliverTo],
+    () => estimatePrintJob({ colorMode, mixedBwEnd, binding, pageCount }, deliverToZone),
+    [colorMode, mixedBwEnd, binding, pageCount, deliverToZone],
   )
 
   const paperLabel = PAPER_SIZES.find((size) => size.id === paper)?.label ?? paper
@@ -91,10 +92,10 @@ export function SummaryStep({
         : `Pages 1-${estimate.bwPages} (Hitam Putih), Pages ${estimate.bwPages + 1}-${pageCount} (Warna)`
 
   const message = useMemo(() => {
-    if (!customerName.trim() || !deliverTo || !fileLink) return ''
+    if (!customerName.trim() || !deliverTo || !deliverToZone || !fileLink) return ''
     return buildPrintWaMessage({
       customerName: customerName.trim(),
-      deliverToName: deliverTo.name,
+      deliverToName: deliverToLabel || deliverToZone.name,
       fileName: file.name,
       pageCount,
       paperLabel,
@@ -106,7 +107,7 @@ export function SummaryStep({
       deliveryFee: estimate.deliveryFee.total,
       total: estimate.total,
     })
-  }, [customerName, deliverTo, fileLink, file.name, pageCount, paperLabel, weightLabel, colorLabel, finishingLabel, estimate])
+  }, [customerName, deliverTo, deliverToZone, deliverToLabel, fileLink, file.name, pageCount, paperLabel, weightLabel, colorLabel, finishingLabel, estimate])
 
   const waLink = useMemo(
     () => (message ? buildWaLink(PRINT_PARTNER.phone, message) : ''),
@@ -124,7 +125,7 @@ export function SummaryStep({
   }
 
   const handleOrder = async () => {
-    if (!deliverTo || !message || !waLink || opening) return
+    if (!deliverTo || !deliverToZone || !message || !waLink || opening) return
     setOpening(true)
     try {
       const order = await api.placeOrder({
@@ -133,7 +134,7 @@ export function SummaryStep({
         providerEmoji: PRINT_PARTNER.emoji,
         serviceLabel: 'Cetak & Antar',
         pickupName: 'Fotokopian Campus',
-        dropoffName: deliverTo.name,
+        dropoffName: deliverToLabel || deliverToZone.name,
         total: estimate.total,
         waUrl: waLink,
       })
@@ -141,7 +142,7 @@ export function SummaryStep({
       pushAppToast({
         icon: '🖨️',
         title: 'Order Cetak & Antar tercatat',
-        body: `Ada ambil dari fotokopian & antar ke ${deliverTo.name} — kamu akan diingatkan menilai 45 menit lagi.`,
+        body: `Ada ambil dari fotokopian & antar ke ${deliverToLabel || deliverToZone.name} — kamu akan diingatkan menilai 45 menit lagi.`,
       })
       pushOrdersChanged()
       window.open(waLink, '_blank', 'noopener,noreferrer')
@@ -175,7 +176,7 @@ export function SummaryStep({
           </div>
           <div className="border-t border-dashed border-neutral-200 dark:border-neutral-700" />
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-neutral-600 dark:text-neutral-300">Ongkir ke {deliverTo ? deliverTo.name : 'zona tujuan'}</span>
+            <span className="text-neutral-600 dark:text-neutral-300">Ongkir ke {deliverTo ? deliverToLabel || deliverToZone?.name : 'zona tujuan'}</span>
             <span className="font-bold tabular-nums">{formatIDR(estimate.deliveryFee.total)}</span>
           </div>
           <div className="flex items-baseline justify-between gap-3">
@@ -197,8 +198,28 @@ export function SummaryStep({
           <span className="text-sm font-semibold">Antar ke mana? 📍</span>
           <div className="relative">
             <select
-              value={deliverToZoneId}
-              onChange={(event) => onChange({ deliverToZoneId: event.target.value })}
+              value={deliverTo?.zoneId ?? ''}
+              onChange={(event) => {
+                const id = event.target.value
+                if (!id) {
+                  onChange({ deliverTo: null })
+                  return
+                }
+                const zone = zones.find((z) => z.id === id)
+                if (!zone) {
+                  onChange({ deliverTo: null })
+                  return
+                }
+                onChange({
+                  deliverTo: {
+                    label: zone.name,
+                    lat: zone.lat,
+                    lng: zone.lng,
+                    zoneId: zone.id,
+                    source: 'zone',
+                  },
+                })
+              }}
               className="h-12 w-full appearance-none rounded-xl border-2 border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-900 transition-colors focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
             >
               <option value="">Pilih zona tujuan…</option>
