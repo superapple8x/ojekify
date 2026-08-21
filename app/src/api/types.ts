@@ -21,8 +21,19 @@ export interface Zone {
   name: string
   area: ZoneArea
   emoji: string
-  x: number
-  y: number
+  lat: number
+  lng: number
+}
+
+export type PlaceSource = 'zone' | 'search' | 'pin' | 'gps' | 'saved'
+
+export interface SelectedPlace {
+  label: string
+  detail?: string
+  lat: number
+  lng: number
+  zoneId: string
+  source: PlaceSource
 }
 
 export interface FareBand {

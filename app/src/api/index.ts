@@ -51,6 +51,7 @@ export type {
   PaymentMethod,
   PdfDescriptor,
   PlaceOrderInput,
+  PlaceSource,
   PriceConditions,
   PrintColorMode,
   Provider,
@@ -65,6 +66,7 @@ export type {
   ReviewSubmissionInput,
   PriceHonestyRating,
   ItemSafetyRating,
+  SelectedPlace,
   SpeedRating,
   ServiceExtras,
   ServiceId,
@@ -78,7 +80,7 @@ export type {
   Zone,
   ZoneArea,
 } from './types'
-export { ZONES, ZONES_BY_ID, getZone } from './zones'
+export { CAMPUS_CENTER, ZONES, ZONES_BY_ID, getZone } from './zones'
 export { PROVIDERS, PROVIDERS_BY_ID, SERVICES, ERRAND_KINDS, VIBE_TAGS } from './providers'
 export { computeQuote, compareQuotes, distanceKm, getQuote } from './priceEngine'
 export { REVIEWS, REVIEWS_BY_PROVIDER, INDIVIDUAL_REVIEWS, LEADERBOARD, LEADERBOARD_WEEK } from './reviews'

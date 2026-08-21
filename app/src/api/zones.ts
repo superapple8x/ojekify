@@ -1,16 +1,18 @@
 import type { Zone } from './types'
 
+export const CAMPUS_CENTER = { lat: -2.9117, lng: 104.6471 } as const
+
 export const ZONES: Zone[] = [
-  { id: 'kampus-utama', name: 'Dalam Kampus', area: 'kampus', emoji: '🏛️', x: 0.5, y: 1.6 },
-  { id: 'fak-ekonomi', name: 'Fakultas Ekonomi', area: 'kampus', emoji: '💹', x: 0.3, y: 1.1 },
-  { id: 'fak-teknik', name: 'Fakultas Teknik', area: 'kampus', emoji: '🔧', x: 0.9, y: 1.3 },
-  { id: 'perpustakaan', name: 'Perpustakaan Pusat', area: 'kampus', emoji: '📚', x: 0.7, y: 2.0 },
-  { id: 'asrama-putih', name: 'Asrama (Dorm)', area: 'kampus', emoji: '🛏️', x: 1.0, y: 2.4 },
-  { id: 'pasar-pagi', name: 'Pasar Pagi', area: 'luar', emoji: '🥬', x: 1.4, y: 0.8 },
-  { id: 'alun-alun', name: 'Alun-Alun Kota', area: 'luar', emoji: '🌳', x: 1.6, y: 0.4 },
-  { id: 'kost-mutiara', name: 'Kost Mutiara Indah', area: 'luar', emoji: '🌸', x: 1.9, y: 1.2 },
-  { id: 'griya-sejahtera', name: 'Griya Sejahtera', area: 'luar', emoji: '🏠', x: 2.1, y: 2.1 },
-  { id: 'rs-kampus', name: 'RS Kampus', area: 'luar', emoji: '🏥', x: 2.6, y: 0.6 },
+  { id: 'kampus-utama', name: 'Dalam Kampus', area: 'kampus', emoji: '🏛️', lat: -2.9117, lng: 104.6471 },
+  { id: 'fak-ekonomi', name: 'Fakultas Ekonomi', area: 'kampus', emoji: '💹', lat: -2.9085, lng: 104.6505 },
+  { id: 'fak-teknik', name: 'Fakultas Teknik', area: 'kampus', emoji: '🔧', lat: -2.9148, lng: 104.6453 },
+  { id: 'perpustakaan', name: 'Perpustakaan Pusat', area: 'kampus', emoji: '📚', lat: -2.912, lng: 104.6475 },
+  { id: 'asrama-putih', name: 'Asrama (Dorm)', area: 'kampus', emoji: '🛏️', lat: -2.905, lng: 104.648 },
+  { id: 'pasar-pagi', name: 'Pasar Pagi', area: 'luar', emoji: '🥬', lat: -2.925, lng: 104.654 },
+  { id: 'alun-alun', name: 'Alun-Alun Kota', area: 'luar', emoji: '🌳', lat: -2.928, lng: 104.657 },
+  { id: 'kost-mutiara', name: 'Kost Mutiara Indah', area: 'luar', emoji: '🌸', lat: -2.92, lng: 104.66 },
+  { id: 'griya-sejahtera', name: 'Griya Sejahtera', area: 'luar', emoji: '🏠', lat: -2.915, lng: 104.665 },
+  { id: 'rs-kampus', name: 'RS Kampus', area: 'luar', emoji: '🏥', lat: -2.93, lng: 104.64 },
 ]
 
 export const ZONES_BY_ID: Record<string, Zone> = Object.fromEntries(
