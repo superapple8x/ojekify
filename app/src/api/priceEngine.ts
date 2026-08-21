@@ -6,21 +6,12 @@ import type {
   Quote,
   QuoteRequest,
   ReceiptLine,
-  Zone,
 } from './types'
 import { getZone } from './zones'
+import { distanceKm } from '../lib/geo'
 
-export function distanceKm(from: Zone, to: Zone): number {
-  const R = 6371 // Earth radius in km
-  const toRad = (deg: number) => (deg * Math.PI) / 180
-  const dLat = toRad(to.lat - from.lat)
-  const dLng = toRad(to.lng - from.lng)
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(from.lat)) * Math.cos(toRad(to.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
-}
+// Re-export for call sites that imported from priceEngine (RouteStep etc.)
+export { distanceKm }
 
 function baseFare(bands: FareBand[], km: number): number {
   for (const band of bands) {
