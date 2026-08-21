@@ -12,9 +12,19 @@ export interface ReceiptModalProps {
   onClose: () => void
 }
 
-export function ReceiptModal({ row, service, pickup, dropoff, onClose }: ReceiptModalProps) {
+export function ReceiptModal({
+  row,
+  service,
+  pickup,
+  dropoff,
+  pickupPlace,
+  dropoffPlace,
+  onClose,
+}: ReceiptModalProps) {
   const provider = row?.provider
   const quote: Quote | undefined = row?.quote
+  const pickupLabel = pickupPlace?.label ?? (pickup ? `${pickup.emoji} ${pickup.name}` : null)
+  const dropoffLabel = dropoffPlace?.label ?? (dropoff ? `${dropoff.emoji} ${dropoff.name}` : null)
 
   return (
     <Modal
@@ -36,10 +46,10 @@ export function ReceiptModal({ row, service, pickup, dropoff, onClose }: Receipt
             <TierBadge tier={provider.tier} className="ml-auto shrink-0" />
           </div>
 
-          {service && pickup && dropoff && (
+          {service && pickupLabel && dropoffLabel && (
             <p className="rounded-xl bg-neutral-100 px-3 py-2 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
-              {service.emoji} {service.label} · {pickup.emoji} {pickup.name} → {dropoff.emoji}{' '}
-              {dropoff.name} · {formatKm(quote.distanceKm)}
+              {service.emoji} {service.label} · {pickupLabel} → {dropoffLabel} ·{' '}
+              {formatKm(quote.distanceKm)}
             </p>
           )}
 
