@@ -99,6 +99,7 @@ export function SummaryStep({
     return buildPrintWaMessage({
       customerName: customerName.trim(),
       deliverToName: deliverToRichName || deliverToLabel || deliverToZone?.name || '',
+      deliverToPlace: deliverTo,
       fileName: file.name,
       pageCount,
       paperLabel,

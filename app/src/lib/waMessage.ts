@@ -24,7 +24,7 @@ export type WaMessageInput = {
   notes?: string
 }
 
-function formatPlaceWithMapsLink(place: SelectedPlace): string {
+export function formatPlaceWithMapsLink(place: SelectedPlace): string {
   const head = place.detail ? `${place.label} — ${place.detail}` : place.label
   return `${head}\n🗺️ https://maps.google.com/?q=${place.lat},${place.lng}`
 }

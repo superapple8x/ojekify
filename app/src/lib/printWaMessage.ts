@@ -1,8 +1,11 @@
+import type { SelectedPlace } from '../api'
 import { formatIDR } from './format'
+import { formatPlaceWithMapsLink } from './waMessage'
 
 export interface PrintWaMessageInput {
   customerName: string
   deliverToName: string
+  deliverToPlace?: SelectedPlace | null
   fileName: string
   pageCount: number
   paperLabel: string
@@ -16,10 +19,13 @@ export interface PrintWaMessageInput {
 }
 
 export function buildPrintWaMessage(input: PrintWaMessageInput): string {
+  const deliverTo = input.deliverToPlace
+    ? formatPlaceWithMapsLink(input.deliverToPlace)
+    : input.deliverToName
   const lines = [
     '[ORDER: PRINT & DELIVER] 🖨️🛵',
     `Name: ${input.customerName}`,
-    `Deliver To: ${input.deliverToName}`,
+    `Deliver To: ${deliverTo}`,
     '',
     '-- PRINT INSTRUCTIONS --',
     `File: ${input.fileName} (${input.pageCount} halaman)`,
