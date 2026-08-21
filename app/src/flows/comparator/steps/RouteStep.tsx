@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api, distanceKm } from '../../../api'
 import type { SelectedPlace, Zone } from '../../../api'
 import { formatKm } from '../../../lib/format'
-import { cn } from '../../../lib/cn'
-import { Button, Chip } from '../../../components'
+import { Button, Chip, LocationPicker } from '../../../components'
 import { useSavedPlaces } from '../../../hooks/useSavedPlaces'
 
 export interface RouteStepProps {
@@ -11,22 +10,6 @@ export interface RouteStepProps {
   dropoff: SelectedPlace | null
   onChange: (pickup: SelectedPlace | null, dropoff: SelectedPlace | null) => void
 }
-
-function zoneToPlace(zone: Zone): SelectedPlace {
-  return {
-    label: zone.name,
-    lat: zone.lat,
-    lng: zone.lng,
-    zoneId: zone.id,
-    source: 'zone',
-  }
-}
-
-const selectClasses = [
-  'h-12 w-full appearance-none rounded-xl border-2 border-neutral-200 bg-white px-4 text-sm font-semibold',
-  'text-neutral-900 transition-colors focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100',
-  'disabled:opacity-50',
-].join(' ')
 
 export function RouteStep({ pickup, dropoff: dropoffPlace, onChange }: RouteStepProps) {
   const [zones, setZones] = useState<Zone[]>([])
@@ -41,40 +24,28 @@ export function RouteStep({ pickup, dropoff: dropoffPlace, onChange }: RouteStep
     }
   }, [])
 
-  const groups = useMemo(() => {
-    const kampus = zones.filter((zone) => zone.area === 'kampus')
-    const luar = zones.filter((zone) => zone.area === 'luar')
-    return [
-      { label: 'Dalam Kampus', items: kampus },
-      { label: 'Luar Kampus', items: luar },
-    ]
-  }, [zones])
-
   const pickupZoneId = pickup?.zoneId ?? ''
-  const dropoffZoneId = dropoffPlace?.zoneId ?? ''
-  const bothChosen = Boolean(pickupZoneId && dropoffZoneId)
-  const sameZone = bothChosen && pickupZoneId === dropoffZoneId
-  const pickupZone = zones.find((zone) => zone.id === pickupZoneId)
-  const dropoffZone = zones.find((zone) => zone.id === dropoffZoneId)
+  const bothChosen = Boolean(pickup && dropoffPlace)
+  const sameZone = Boolean(pickup && dropoffPlace && pickup.zoneId === dropoffPlace.zoneId)
 
   return (
     <div className="space-y-5">
       {!bothChosen && (
         <p className="text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
-          Pilih zona jemput dan zona antar. Zona sudah dipetakan ke daftar tarif tiap provider,
-          jadi tidak perlu ngetik alamat.
+          Cari alamat, geser pin di peta, pakai GPS, atau pilih zona populer — tarif tetap dihitung dari zona
+          terdekat.
         </p>
       )}
 
-      {bothChosen && !sameZone && pickupZone && dropoffZone && (
+      {bothChosen && !sameZone && pickup && dropoffPlace && (
         <p className="rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
-          {pickupZone.emoji} {pickupZone.name} → {dropoffZone.emoji} {dropoffZone.name} ± {formatKm(distanceKm(pickupZone, dropoffZone))}
+          {pickup.label} → {dropoffPlace.label} ± {formatKm(distanceKm(pickup, dropoffPlace))}
         </p>
       )}
 
       {sameZone && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 dark:bg-red-500/10 dark:text-red-300" role="alert">
-          Zona jemput dan antar tidak boleh sama, pilih zona lain ya.
+          Zona jemput dan antar tidak boleh sama, pilih zona lain ya — geser pin sedikit atau pilih zona lain.
         </p>
       )}
 
@@ -118,61 +89,29 @@ export function RouteStep({ pickup, dropoff: dropoffPlace, onChange }: RouteStep
 
       <div className="grid gap-4 sm:grid-cols-2 sm:items-end">
         <div className="space-y-1.5">
-          <label htmlFor="pickup" className="text-sm font-semibold">Jemput dari</label>
-          <div className="relative">
-            <select
-              id="pickup"
-              value={pickupZoneId}
-              onChange={(e) => {
-                const zone = zones.find((z) => z.id === e.target.value)
-                onChange(zone ? zoneToPlace(zone) : null, dropoffPlace)
-              }}
-              className={cn(selectClasses, pickupZoneId === '' && 'text-neutral-400 dark:text-neutral-500')}
-            >
-              <option value="">Pilih zona…</option>
-              {groups.map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.items.map((zone) => (
-                    <option key={zone.id} value={zone.id}>
-                      {zone.emoji} {zone.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <span aria-hidden className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-neutral-400">
-              ▾
-            </span>
-          </div>
+          <label htmlFor="pickup" className="text-sm font-semibold">
+            Jemput dari
+          </label>
+          <LocationPicker
+            id="pickup"
+            value={pickup}
+            onChange={(next) => onChange(next, dropoffPlace)}
+            placeholder="Pilih lokasi jemput…"
+            title="Pilih lokasi jemput"
+          />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="dropoff" className="text-sm font-semibold">Antar ke</label>
-          <div className="relative">
-            <select
-              id="dropoff"
-              value={dropoffZoneId}
-              onChange={(e) => {
-                const zone = zones.find((z) => z.id === e.target.value)
-                onChange(pickup, zone ? zoneToPlace(zone) : null)
-              }}
-              className={cn(selectClasses, dropoffZoneId === '' && 'text-neutral-400 dark:text-neutral-400')}
-            >
-              <option value="">Pilih zona…</option>
-              {groups.map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.items.map((zone) => (
-                    <option key={zone.id} value={zone.id}>
-                      {zone.emoji} {zone.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <span aria-hidden className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-neutral-400">
-              ▾
-            </span>
-          </div>
+          <label htmlFor="dropoff" className="text-sm font-semibold">
+            Antar ke
+          </label>
+          <LocationPicker
+            id="dropoff"
+            value={dropoffPlace}
+            onChange={(next) => onChange(pickup, next)}
+            placeholder="Pilih lokasi antar…"
+            title="Pilih lokasi antar"
+          />
         </div>
       </div>
 
@@ -186,7 +125,7 @@ export function RouteStep({ pickup, dropoff: dropoffPlace, onChange }: RouteStep
         </button>
       )}
 
-      {pickupZone && pickup && (
+      {pickup && (
         <form
           className="flex flex-col gap-2 rounded-2xl border-2 border-dashed border-neutral-200 p-3.5 dark:border-neutral-800 sm:flex-row sm:items-center"
           onSubmit={(event) => {

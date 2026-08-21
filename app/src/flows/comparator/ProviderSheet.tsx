@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { api, type ComparisonRow, type ServiceMeta, type Zone } from '../../api'
+import { api, type ComparisonRow, type SelectedPlace, type ServiceMeta, type Zone } from '../../api'
 import { Button, Modal, ProviderAvatar, StarRating, TierBadge } from '../../components'
 import { formatKm } from '../../lib/format'
 import { buildWaMessage } from '../../lib/waMessage'
@@ -12,6 +12,8 @@ export interface ProviderSheetProps {
   service?: ServiceMeta
   pickup?: Zone
   dropoff?: Zone
+  pickupPlace?: SelectedPlace | null
+  dropoffPlace?: SelectedPlace | null
   paymentLabel: string
   errandLabel?: string
   itemCount?: number

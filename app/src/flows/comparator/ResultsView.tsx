@@ -121,9 +121,9 @@ export function ResultsView({ draft, hour, onEditRequest }: ResultsViewProps) {
               {service.emoji} {service.label}
             </span>
           )}
-          {pickup && dropoff && (
+          {draft.pickup && draft.dropoff && (
             <span className="text-neutral-500 dark:text-neutral-400">
-              {pickup.emoji} {pickup.name} → {dropoff.emoji} {dropoff.name}
+              {draft.pickup.label} → {draft.dropoff.label}
             </span>
           )}
           {errandKind && (
@@ -287,6 +287,8 @@ export function ResultsView({ draft, hour, onEditRequest }: ResultsViewProps) {
         service={service}
         pickup={pickup}
         dropoff={dropoff}
+        pickupPlace={draft.pickup}
+        dropoffPlace={draft.dropoff}
         onClose={() => setReceiptRow(null)}
       />
 
@@ -295,6 +297,8 @@ export function ResultsView({ draft, hour, onEditRequest }: ResultsViewProps) {
         service={service}
         pickup={pickup}
         dropoff={dropoff}
+        pickupPlace={draft.pickup}
+        dropoffPlace={draft.dropoff}
         paymentLabel={paymentLabel}
         errandLabel={errandKind?.label}
         itemCount={itemCount}

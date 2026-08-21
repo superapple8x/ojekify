@@ -1,4 +1,4 @@
-import type { ComparisonRow, Quote, ServiceMeta, Zone } from '../../api'
+import type { ComparisonRow, Quote, SelectedPlace, ServiceMeta, Zone } from '../../api'
 import { Button, Modal, ProviderAvatar, TierBadge } from '../../components'
 import { formatIDR, formatKm } from '../../lib/format'
 
@@ -7,6 +7,8 @@ export interface ReceiptModalProps {
   service?: ServiceMeta
   pickup?: Zone
   dropoff?: Zone
+  pickupPlace?: SelectedPlace | null
+  dropoffPlace?: SelectedPlace | null
   onClose: () => void
 }
 
