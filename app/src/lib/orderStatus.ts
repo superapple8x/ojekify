@@ -31,7 +31,7 @@ export const ORDER_STATUSES: Record<OrderStatus, OrderStatusMeta> = {
     label: 'Dibatalkan',
     emoji: '✕',
     variant: 'danger',
-    hint: 'Pesanan batal — saldo tidak terpotong.',
+    hint: 'Pesanan dibatalkan.',
   },
 }
 

@@ -56,7 +56,7 @@ export function OrderDetailSheet({ order, onClose, onOrderChanged }: OrderDetail
           title: updated.status === 'selesai' ? 'Pesanan selesai 🎉' : 'Pesanan dibatalkan',
           body:
             updated.status === 'selesai'
-              ? `Jangan lupa nilai ${updated.providerName} — +50 KampusKoin.`
+              ? `Jangan lupa nilai ${updated.providerName} ⭐`
               : `${updated.providerName} diberi tahu lewat WhatsApp.`,
         })
         setConfirmAction(null)
@@ -165,10 +165,10 @@ export function OrderDetailSheet({ order, onClose, onOrderChanged }: OrderDetail
           {order.status === 'selesai' && (
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/5">
               <p className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
-                ⭐ Nilai {order.providerName} — +50 KampusKoin
+                ⭐ Nilai {order.providerName}
               </p>
               <p className="mt-1 text-[11px] leading-relaxed text-emerald-900/70 dark:text-emerald-200/60">
-                Ulasan jujur dibayar pakai KampusKoin. Buka profil provider dan tulis 3 pilar
+                Ulasan jujurmu masuk ke hitungan rating. Buka profil provider dan tulis 3 pilar
                 (kecepatan, keamanan barang, kejujuran harga).
               </p>
             </div>

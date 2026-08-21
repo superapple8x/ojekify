@@ -141,7 +141,7 @@ export function SummaryStep({
       pushAppToast({
         icon: '🖨️',
         title: 'Order Cetak & Antar tercatat',
-        body: `Ada ambil dari fotokopian & antar ke ${deliverTo.name} — kamu akan diingatkan menilai 45 menit lagi (+50 KampusKoin).`,
+        body: `Ada ambil dari fotokopian & antar ke ${deliverTo.name} — kamu akan diingatkan menilai 45 menit lagi.`,
       })
       pushOrdersChanged()
       window.open(waLink, '_blank', 'noopener,noreferrer')

@@ -112,7 +112,7 @@ export function ProviderSheet({
       pushAppToast({
         icon: '📦',
         title: 'Order tercatat di riwayat',
-        body: `${service.emoji} ${service.label} • ${pickup.emoji} ${pickup.name} → ${dropoff.emoji} ${dropoff.name} via ${provider.name} — kamu akan diingatkan menilai 45 menit lagi (+50 KampusKoin).`,
+        body: `${service.emoji} ${service.label} • ${pickup.emoji} ${pickup.name} → ${dropoff.emoji} ${dropoff.name} via ${provider.name} — kamu akan diingatkan menilai 45 menit lagi.`,
       })
       pushOrdersChanged()
       window.open(waLink, '_blank', 'noopener,noreferrer')

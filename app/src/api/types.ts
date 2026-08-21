@@ -207,22 +207,6 @@ export interface PdfDescriptor {
   sizeBytes: number
 }
 
-export type KampusKoinKind = 'earn' | 'spend'
-
-export interface KampusKoinEntry {
-  id: string
-  kind: KampusKoinKind
-  amount: number
-  reason: string
-  note: string
-  at: number
-}
-
-export interface KampusKoinState {
-  balance: number
-  entries: KampusKoinEntry[]
-}
-
 export type DisputeKind = 'ghosted' | 'no-show'
 
 export interface DisputeReport {
@@ -267,38 +251,10 @@ export interface PlaceOrderInput {
   waUrl: string
 }
 
-export type VoucherKind = 'print' | 'delivery'
-
-export interface VoucherCatalogItem {
-  id: string
-  kind: VoucherKind
-  emoji: string
-  title: string
-  description: string
-  cost: number
-}
-
-export interface RedeemedVoucher {
-  id: string
-  catalogId: string
-  kind: VoucherKind
-  emoji: string
-  title: string
-  cost: number
-  code: string
-  redeemedAt: number
-}
-
-export type RedeemVoucherResult =
-  | { voucher: RedeemedVoucher; error: null }
-  | { voucher: null; error: 'insufficient' | 'not-found' }
-
 export type NotificationKind =
   | 'order-confirmed'
   | 'review-hook'
-  | 'koin-earned'
   | 'dispute-logged'
-  | 'voucher-redeemed'
 
 export interface AppNotification {
   id: string
@@ -343,9 +299,4 @@ export interface ApiClient {
   markNotificationsRead(): Promise<void>
   getDueReviewHooks(now: number): Promise<DueReviewHook[]>
   deliverReviewHook(orderId: string): Promise<AppNotification>
-  getKampusKoin(): Promise<KampusKoinState>
-  getVoucherCatalog(): Promise<VoucherCatalogItem[]>
-  getRedeemedVouchers(): Promise<RedeemedVoucher[]>
-  /** Tukar KampusKoin → voucher cetak/antar (mock: saldo cukup + code). */
-  redeemVoucher(catalogId: string): Promise<RedeemVoucherResult>
 }

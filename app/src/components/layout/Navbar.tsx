@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { useTheme } from '../../hooks/useTheme'
 import { Button } from '../Button'
-import { KampusKoinBadge } from './KampusKoinBadge'
 import { NAV_LINKS } from './navItems'
 import { cn } from '../../lib/cn'
 
@@ -54,10 +53,10 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <Link
             to="/profil"
-            aria-label="Profil — saldo KampusKoin & voucher"
-            className="transition-transform duration-150 hover:scale-105 active:scale-95"
+            aria-label="Profil kamu"
+            className="grid size-10 place-items-center rounded-full text-lg transition-transform duration-150 hover:scale-105 active:scale-95"
           >
-            <KampusKoinBadge compact />
+            <span aria-hidden>👤</span>
           </Link>
           <Button
             variant="ghost"
