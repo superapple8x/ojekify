@@ -12,18 +12,28 @@ const variantClasses: Record<TagVariant, string> = {
   info: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
 }
 
+export type TagSize = 'sm' | 'md' | 'lg'
+
+const sizeClasses: Record<TagSize, string> = {
+  sm: 'px-2.5 py-1 text-[11px] font-semibold',
+  md: 'px-3 py-1 text-xs font-semibold',
+  lg: 'px-3.5 py-1.5 text-[13px] font-bold',
+}
+
 export interface TagProps {
   children: ReactNode
   variant?: TagVariant
+  size?: TagSize
   icon?: ReactNode
   className?: string
 }
 
-export function Tag({ children, variant = 'neutral', icon, className }: TagProps) {
+export function Tag({ children, variant = 'neutral', size = 'sm', icon, className }: TagProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold',
+        'inline-flex items-center gap-1 rounded-full',
+        sizeClasses[size],
         variantClasses[variant],
         className,
       )}

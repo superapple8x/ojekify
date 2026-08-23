@@ -57,6 +57,20 @@ function sortTagsByCount(tags: TagSummary[]) {
   return [...tags].sort((a, b) => b.count - a.count)
 }
 
+type VibeTagSize = 'sm' | 'md' | 'lg'
+
+const VIBE_TAG_ICON_SIZES: Record<VibeTagSize, string> = {
+  sm: 'size-3',
+  md: 'size-3',
+  lg: 'size-3.5',
+}
+
+function tagSizeForCount(count: number): VibeTagSize {
+  if (count >= 100) return 'lg'
+  if (count >= 10) return 'md'
+  return 'sm'
+}
+
 const STAT_TONES = {
   neutral: {
     tile: 'bg-neutral-100 dark:bg-neutral-800',
@@ -96,6 +110,21 @@ function StatTile({ icon, label, value, tone = 'neutral', valueClass }: StatTile
         <span className={`truncate text-sm font-extrabold tabular-nums ${valueClass ?? ''}`}>{value}</span>
       </span>
     </div>
+  )
+}
+
+function VibeTagPill({ tag, kind }: { tag: TagSummary; kind: 'positive' | 'warning' }) {
+  const size = tagSizeForCount(tag.count)
+  const positive = kind === 'positive'
+  const Icon = positive ? Check : AlertTriangle
+  return (
+    <Tag
+      variant={positive ? 'success' : 'danger'}
+      size={size}
+      icon={<Icon className={VIBE_TAG_ICON_SIZES[size]} aria-hidden />}
+    >
+      {tag.label} · {tag.count}
+    </Tag>
   )
 }
 
@@ -217,6 +246,18 @@ export default function ProviderProfile() {
   const waMessage = buildWaMessage({ provider })
   const waLink = provider.phone ? buildWaLink(provider.phone, waMessage) : ''
 
+  const morePositiveCount = review
+    ? Math.max(review.positiveTags.length - topPositiveTags.length, 0)
+    : 0
+  const moreWarningCount = review
+    ? Math.max(review.warningTags.length - topWarningTags.length, 0)
+    : 0
+  const moreTagParts: string[] = []
+  if (morePositiveCount > 0) moreTagParts.push(`+${morePositiveCount} tag positif`)
+  if (moreWarningCount > 0) moreTagParts.push(`+${moreWarningCount} red flag`)
+  const moreTagsHint =
+    moreTagParts.length > 0 ? `${moreTagParts.join(' dan ')} lainnya di bawah` : ''
+
   return (
     <div className="animate-fade-in mx-auto max-w-5xl space-y-5">
       <Link
@@ -305,20 +346,21 @@ export default function ProviderProfile() {
             <h2 className="text-sm font-extrabold">Vibe tags</h2>
             <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Paling sering disebut:</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {topPositiveTags.map((tag) => (
-                <Tag key={tag.id} variant="success" icon={<Check className="size-3" />}>
-                  {tag.label}
-                </Tag>
+              {topPositiveTags.map((t) => (
+                <VibeTagPill key={t.id} tag={t} kind="positive" />
               ))}
-              {topWarningTags.map((tag) => (
-                <Tag key={tag.id} variant="danger" icon={<AlertTriangle className="size-3" />}>
-                  {tag.label}
-                </Tag>
+              {topWarningTags.map((t) => (
+                <VibeTagPill key={t.id} tag={t} kind="warning" />
               ))}
               {topPositiveTags.length === 0 && topWarningTags.length === 0 && (
                 <p className="text-xs italic text-neutral-400 dark:text-neutral-500">Belum ada tag.</p>
               )}
             </div>
+            {moreTagsHint && (
+              <p className="mt-2.5 text-[11px] font-medium text-neutral-400 dark:text-neutral-500">
+                {moreTagsHint}
+              </p>
+            )}
           </Card>
         </aside>
 
@@ -350,10 +392,8 @@ export default function ProviderProfile() {
                 </h3>
                 {review && review.positiveTags.length > 0 ? (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {review.positiveTags.map((tag) => (
-                      <Tag key={tag.id} variant="success" icon={<Check className="size-3" />}>
-                        {tag.label} · {tag.count}
-                      </Tag>
+                    {review.positiveTags.map((t) => (
+                      <VibeTagPill key={t.id} tag={t} kind="positive" />
                     ))}
                   </div>
                 ) : (
@@ -369,10 +409,8 @@ export default function ProviderProfile() {
                 </h3>
                 {review && review.warningTags.length > 0 ? (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {review.warningTags.map((tag) => (
-                      <Tag key={tag.id} variant="danger" icon={<AlertTriangle className="size-3" />}>
-                        {tag.label} · {tag.count}
-                      </Tag>
+                    {review.warningTags.map((t) => (
+                      <VibeTagPill key={t.id} tag={t} kind="warning" />
                     ))}
                   </div>
                 ) : (
