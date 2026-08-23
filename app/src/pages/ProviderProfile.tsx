@@ -1,6 +1,17 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { AlertTriangle, Clock, ShieldCheck, Zap } from 'lucide-react'
+import {
+  AlertTriangle,
+  Check,
+  ChevronLeft,
+  Clock,
+  Compass,
+  MessagesSquare,
+  SearchX,
+  ShieldCheck,
+  Tags,
+  Zap,
+} from 'lucide-react'
 import { api, type IndividualReview, type Provider, type ProviderReview } from '../api'
 import { useCountUp } from '../hooks/useCountUp'
 import { ReviewForm } from '../flows/review/ReviewForm'
@@ -181,7 +192,7 @@ export default function ProviderProfile() {
     return (
       <div className="animate-fade-in">
         <EmptyState
-          icon="🔍"
+          icon={<SearchX className="size-7" />}
           title="Provider tidak ditemukan"
           description="Profil provider yang kamu cari tidak ada (atau sudah dihapus). Coba bandingkan harga dulu untuk pilih provider lain."
           action={
@@ -204,7 +215,7 @@ export default function ProviderProfile() {
         to="/bandingkan"
         className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 transition-colors hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400"
       >
-        <span aria-hidden>←</span> Kembali ke hasil banding
+        <ChevronLeft className="size-3.5 shrink-0" aria-hidden /> Kembali ke hasil banding
       </Link>
 
       <GhostWarningBanner provider={provider} review={review} />
@@ -277,12 +288,12 @@ export default function ProviderProfile() {
             <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Paling sering disebut:</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {topPositiveTags.map((tag) => (
-                <Tag key={tag.id} variant="success" icon={<span aria-hidden>✓</span>}>
+                <Tag key={tag.id} variant="success" icon={<Check className="size-3" />}>
                   {tag.label}
                 </Tag>
               ))}
               {topWarningTags.map((tag) => (
-                <Tag key={tag.id} variant="danger" icon={<span aria-hidden>!</span>}>
+                <Tag key={tag.id} variant="danger" icon={<AlertTriangle className="size-3" />}>
                   {tag.label}
                 </Tag>
               ))}
@@ -296,7 +307,9 @@ export default function ProviderProfile() {
         <div className="min-w-0 space-y-5">
           {review && (
             <Card padding="lg" className={SLIDE_UP}>
-              <h2 className="text-sm font-extrabold">Rating per pilar</h2>
+              <h2 className="flex items-center gap-2 text-sm font-extrabold">
+              <Compass className="size-4" aria-hidden /> Rating per pilar
+            </h2>
               <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                 Tiga ukuran yang paling menentukan di kehidupan kampus — nilai dari ulasan mahasiswa.
               </p>
@@ -306,7 +319,7 @@ export default function ProviderProfile() {
 
           <Card padding="lg" className={SLIDE_UP} style={{ animationDelay: '120ms' }}>
             <h2 className="flex items-center gap-2 text-sm font-extrabold">
-              <span aria-hidden>🏷️</span> Vibe tags
+              <Tags className="size-4" aria-hidden /> Vibe tags
             </h2>
             <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               Label singkat dari sesama mahasiswa soal pengalaman pakai {provider.name}.
@@ -315,12 +328,12 @@ export default function ProviderProfile() {
             <div className="mt-4 space-y-4">
               <section aria-label="Tag positif">
                 <h3 className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                  <span aria-hidden>🟢</span> Positive Tags
+                  <span aria-hidden className="size-2 rounded-full bg-emerald-500 dark:bg-emerald-400" /> Positive Tags
                 </h3>
                 {review && review.positiveTags.length > 0 ? (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {review.positiveTags.map((tag) => (
-                      <Tag key={tag.id} variant="success" icon={<span aria-hidden>✓</span>}>
+                      <Tag key={tag.id} variant="success" icon={<Check className="size-3" />}>
                         {tag.label} · {tag.count}
                       </Tag>
                     ))}
@@ -334,12 +347,12 @@ export default function ProviderProfile() {
 
               <section aria-label="Tag peringatan">
                 <h3 className="flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400">
-                  <span aria-hidden>🔴</span> Warning Tags (Red Flags)
+                  <span aria-hidden className="size-2 rounded-full bg-red-500 dark:bg-red-400" /> Warning Tags (Red Flags)
                 </h3>
                 {review && review.warningTags.length > 0 ? (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {review.warningTags.map((tag) => (
-                      <Tag key={tag.id} variant="danger" icon={<span aria-hidden>!</span>}>
+                      <Tag key={tag.id} variant="danger" icon={<AlertTriangle className="size-3" />}>
                         {tag.label} · {tag.count}
                       </Tag>
                     ))}
@@ -359,7 +372,7 @@ export default function ProviderProfile() {
 
           <Card padding="lg" className={SLIDE_UP} style={{ animationDelay: '240ms' }}>
             <h2 className="flex items-center gap-2 text-sm font-extrabold">
-              <span aria-hidden>💬</span> Ulasan Mahasiswa
+              <MessagesSquare className="size-4" aria-hidden /> Ulasan Mahasiswa
             </h2>
             <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               {individualReviews.length} ulasan dari mahasiswa yang pernah pakai {provider.name}.
@@ -382,7 +395,7 @@ export default function ProviderProfile() {
                 ))
               ) : (
                 <EmptyState
-                  icon="🔍"
+                  icon={<SearchX className="size-7" />}
                   title="Tidak ada ulasan"
                   description="Tidak ada ulasan yang cocok dengan filter yang dipilih."
                 />
