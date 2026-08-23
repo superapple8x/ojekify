@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { AlertTriangle, Clock, ShieldCheck, Zap } from 'lucide-react'
 import { api, type IndividualReview, type Provider, type ProviderReview } from '../api'
+import { useCountUp } from '../hooks/useCountUp'
 import { ReviewForm } from '../flows/review/ReviewForm'
 import { ReviewFilters, applyReviewFilters, type ReviewFilterState } from '../flows/review/ReviewFilters'
 import { ReviewCard } from '../flows/review/ReviewCard'
@@ -37,6 +39,48 @@ interface TagSummary {
 
 function sortTagsByCount(tags: TagSummary[]) {
   return [...tags].sort((a, b) => b.count - a.count)
+}
+
+const STAT_TONES = {
+  neutral: {
+    tile: 'bg-neutral-100 dark:bg-neutral-800',
+    icon: 'bg-white text-brand-600 shadow-sm dark:bg-neutral-900 dark:text-brand-400',
+  },
+  success: {
+    tile: 'bg-emerald-50 dark:bg-emerald-500/10',
+    icon: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+  },
+  warning: {
+    tile: 'bg-amber-50 dark:bg-amber-500/10',
+    icon: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+  },
+} as const
+
+type StatTone = keyof typeof STAT_TONES
+
+interface StatTileProps {
+  icon: ReactNode
+  label: string
+  value: string
+  tone?: StatTone
+  valueClass?: string
+}
+
+function StatTile({ icon, label, value, tone = 'neutral', valueClass }: StatTileProps) {
+  const t = STAT_TONES[tone]
+  return (
+    <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${t.tile}`}>
+      <span aria-hidden className={`grid size-9 shrink-0 place-items-center rounded-lg ${t.icon}`}>
+        {icon}
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
+          {label}
+        </span>
+        <span className={`truncate text-sm font-extrabold tabular-nums ${valueClass ?? ''}`}>{value}</span>
+      </span>
+    </div>
+  )
 }
 
 export default function ProviderProfile() {
@@ -84,6 +128,9 @@ export default function ProviderProfile() {
     [review],
   )
 
+  const score = review?.score ?? provider?.rating ?? 0
+  const animatedScore = useCountUp(score)
+
   if (loading) {
     return (
       <div
@@ -94,10 +141,11 @@ export default function ProviderProfile() {
         <Skeleton className="h-3.5 w-44" />
         <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-start">
           <aside className="space-y-5">
-            <Card padding="lg">
-              <div className="flex flex-col items-center gap-3">
-                <Skeleton variant="circle" className="size-24" />
-                <Skeleton className="h-4 w-36" />
+            <Card padding="none" className="overflow-hidden">
+              <Skeleton className="h-24 rounded-none" />
+              <div className="-mt-10 flex flex-col items-center gap-3 px-6 pb-6 sm:px-7">
+                <Skeleton variant="circle" className="size-20" />
+                <Skeleton className="mt-1.5 h-4 w-36" />
                 <Skeleton className="h-3 w-48" />
               </div>
             </Card>
@@ -148,7 +196,6 @@ export default function ProviderProfile() {
     )
   }
 
-  const score = review?.score ?? provider.rating
   const totalRatings = review?.totalRatings ?? provider.reviews
 
   return (
@@ -167,10 +214,14 @@ export default function ProviderProfile() {
           className={`space-y-5 self-start lg:sticky lg:top-24 ${SLIDE_UP}`}
           style={{ animationDelay: '60ms' }}
         >
-          <Card padding="lg">
-            <div className="flex flex-col items-center gap-2 text-center">
+          <Card padding="none" className="relative overflow-hidden">
+            <div
+              aria-hidden
+              className="h-24 bg-gradient-to-b from-brand-50 to-white dark:from-brand-500/10 dark:to-neutral-900"
+            />
+            <div className="-mt-10 flex flex-col items-center gap-1 px-6 pb-6 text-center sm:px-7">
               <ProviderAvatar name={provider.name} emoji={provider.emoji} seed={provider.id} size="xl" />
-              <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
                 <h1 className="text-xl font-extrabold tracking-tight">{provider.name}</h1>
                 <TierBadge tier={provider.tier} />
               </div>
@@ -180,7 +231,11 @@ export default function ProviderProfile() {
 
           <Card padding="lg">
             <div className="flex flex-col items-center gap-2">
-              <ScoreRing value={score} size={136} strokeWidth={11} />
+              <ScoreRing value={score} size={136} strokeWidth={11}>
+                <span className="text-3xl font-extrabold tracking-tight tabular-nums">
+                  {animatedScore.toFixed(1)}
+                </span>
+              </ScoreRing>
               <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                 dari {(totalRatings ?? 0).toLocaleString('id-ID')} ulasan mahasiswa
               </p>
@@ -188,38 +243,33 @@ export default function ProviderProfile() {
           </Card>
 
           <div className="grid gap-2">
-            <div className="flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-3 py-2.5 dark:bg-neutral-800">
-              <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                ⚡ Respon
-              </span>
-              <span className="text-sm font-extrabold tabular-nums">±{provider.responseTimeMinutes} mnt</span>
-            </div>
-            <div className="flex items-center justify-between gap-2 rounded-xl bg-neutral-100 px-3 py-2.5 dark:bg-neutral-800">
-              <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                🕐 Jam operasional
-              </span>
-              <span className="text-right text-sm font-extrabold tabular-nums">{provider.openHours}</span>
-            </div>
-            <div
-              className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 ${
-                provider.noHiddenFees
-                  ? 'bg-emerald-50 dark:bg-emerald-500/10'
-                  : 'bg-amber-50 dark:bg-amber-500/10'
-              }`}
-            >
-              <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-                {provider.noHiddenFees ? '🛡️ Biaya' : '⚠️ Biaya'}
-              </span>
-              <span
-                className={`text-sm font-extrabold tabular-nums ${
-                  provider.noHiddenFees
-                    ? 'text-emerald-700 dark:text-emerald-300'
-                    : 'text-amber-700 dark:text-amber-300'
-                }`}
-              >
-                {provider.noHiddenFees ? 'Tanpa tersembunyi' : 'Bisa ada tambahan'}
-              </span>
-            </div>
+            <StatTile
+              icon={<Zap className="size-4" />}
+              label="Respon"
+              value={`±${provider.responseTimeMinutes} mnt`}
+            />
+            <StatTile
+              icon={<Clock className="size-4" />}
+              label="Jam operasional"
+              value={provider.openHours}
+            />
+            {provider.noHiddenFees ? (
+              <StatTile
+                icon={<ShieldCheck className="size-4" />}
+                label="Biaya"
+                tone="success"
+                value="Tanpa tersembunyi"
+                valueClass="text-emerald-700 dark:text-emerald-300"
+              />
+            ) : (
+              <StatTile
+                icon={<AlertTriangle className="size-4" />}
+                label="Biaya"
+                tone="warning"
+                value="Bisa ada tambahan"
+                valueClass="text-amber-700 dark:text-amber-300"
+              />
+            )}
           </div>
 
           <Card padding="lg">
