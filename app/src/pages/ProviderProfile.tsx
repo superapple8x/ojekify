@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   Clock,
   Compass,
+  MessageCircle,
   MessagesSquare,
   SearchX,
   ShieldCheck,
@@ -19,6 +20,8 @@ import { ReviewFilters, applyReviewFilters, type ReviewFilterState } from '../fl
 import { ReviewCard } from '../flows/review/ReviewCard'
 import { ReportIssueCard } from '../flows/review/ReportIssueCard'
 import { GhostWarningBanner } from '../flows/review/GhostWarningBanner'
+import { buildWaLink } from '../lib/wa'
+import { buildWaMessage } from '../lib/waMessage'
 import {
   Button,
   Card,
@@ -208,6 +211,8 @@ export default function ProviderProfile() {
   }
 
   const totalRatings = review?.totalRatings ?? provider.reviews
+  const waMessage = buildWaMessage({ provider })
+  const waLink = provider.phone ? buildWaLink(provider.phone, waMessage) : ''
 
   return (
     <div className="animate-fade-in mx-auto max-w-5xl space-y-5">
@@ -239,6 +244,16 @@ export default function ProviderProfile() {
               <p className="text-sm text-neutral-500 dark:text-neutral-400">{provider.tagline}</p>
             </div>
           </Card>
+
+          {provider.phone && (
+            <Button
+              block
+              size="lg"
+              onClick={() => window.open(waLink, '_blank', 'noopener,noreferrer')}
+            >
+              <MessageCircle className="size-4" aria-hidden /> Pesan via WhatsApp
+            </Button>
+          )}
 
           <Card padding="lg">
             <div className="flex flex-col items-center gap-2">

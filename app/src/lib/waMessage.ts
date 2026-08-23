@@ -12,13 +12,13 @@ export const WA_FIELD_LABELS: Record<WaFieldId, string> = {
 
 export type WaMessageInput = {
   provider: Provider
-  quote: Quote
-  serviceLabel: string
-  pickupName: string
-  dropoffName: string
+  quote?: Quote
+  serviceLabel?: string
+  pickupName?: string
+  dropoffName?: string
   pickupPlace?: SelectedPlace | null
   dropoffPlace?: SelectedPlace | null
-  paymentLabel: string
+  paymentLabel?: string
   customerName?: string
   itemCount?: number
   notes?: string
@@ -79,7 +79,7 @@ export function buildWaMessage(input: WaMessageInput): string {
     message = message ? `${message}\n${parts.join(glue)}` : parts.join(glue)
   }
 
-  if (template.includeFareSummary) {
+  if (template.includeFareSummary && input.quote) {
     message = `${message}\n\n${fareSummary(input.quote)}`
   }
 
