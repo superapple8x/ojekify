@@ -147,7 +147,13 @@ function VibeTagPicker({
   )
 }
 
-export function ReviewForm({ provider }: { provider: Provider }) {
+export function ReviewForm({
+  provider,
+  onSubmitted,
+}: {
+  provider: Provider
+  onSubmitted?: () => void
+}) {
   const [speed, setSpeed] = useState<SpeedRating | null>(null)
   const [itemSafety, setItemSafety] = useState<ItemSafetyRating | null>(null)
   const [tagIds, setTagIds] = useState<string[]>([])
@@ -222,6 +228,7 @@ export function ReviewForm({ provider }: { provider: Provider }) {
         priceNote: priceMatch ? '' : priceNote.trim(),
       })
       setSubmitted(true)
+      onSubmitted?.()
       pushAppToast({
         icon: '⭐',
         title: 'Ulasan terkirim 🎉',

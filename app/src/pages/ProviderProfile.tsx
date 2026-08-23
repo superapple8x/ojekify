@@ -8,6 +8,7 @@ import {
   Compass,
   MessageCircle,
   MessagesSquare,
+  PenLine,
   SearchX,
   ShieldCheck,
   Tags,
@@ -26,6 +27,7 @@ import {
   Button,
   Card,
   EmptyState,
+  Modal,
   PillarBars,
   ProviderAvatar,
   RatingBreakdown,
@@ -103,6 +105,7 @@ export default function ProviderProfile() {
   const [review, setReview] = useState<ProviderReview | null>(null)
   const [individualReviews, setIndividualReviews] = useState<IndividualReview[]>([])
   const [filters, setFilters] = useState<ReviewFilterState>(DEFAULT_FILTERS)
+  const [reviewOpen, setReviewOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -381,9 +384,21 @@ export default function ProviderProfile() {
             </div>
           </Card>
 
-          <div className={SLIDE_UP} style={{ animationDelay: '180ms' }}>
-            <ReviewForm provider={provider} />
-          </div>
+          <Card padding="lg" className={SLIDE_UP} style={{ animationDelay: '180ms' }}>
+            <h2 className="flex items-center gap-2 text-sm font-extrabold">
+              <PenLine className="size-4" aria-hidden /> Tulis ulasan kamu
+            </h2>
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              Nilai tiga pilar utama dan bagikan vibe tag pengalamanmu dengan {provider.name}.
+            </p>
+            <Button variant="outline" size="sm" className="mt-4" onClick={() => setReviewOpen(true)}>
+              <PenLine className="size-3.5" aria-hidden /> Tulis ulasan
+            </Button>
+          </Card>
+
+          <Modal open={reviewOpen} onClose={() => setReviewOpen(false)} title="Tulis ulasan" size="lg">
+            <ReviewForm provider={provider} onSubmitted={() => setReviewOpen(false)} />
+          </Modal>
 
           <Card padding="lg" className={SLIDE_UP} style={{ animationDelay: '240ms' }}>
             <h2 className="flex items-center gap-2 text-sm font-extrabold">
