@@ -24,6 +24,9 @@ export {
   type ProviderAvatarSize,
 } from './ProviderAvatar'
 export { ToastStack, type ToastData, type ToastStackProps } from './ToastStack'
+export { ScoreRing, type ScoreRingProps } from './provider/ScoreRing'
+export { PillarBars, type PillarBarsProps } from './provider/PillarBars'
+export { RatingBreakdown, type RatingBreakdownProps } from './provider/RatingBreakdown'
 export { MapCanvas, type MapCanvasProps } from './map/MapCanvas'
 export { LocationPicker, type LocationPickerProps } from './map/LocationPicker'
 export { LocationPickerSheet, type LocationPickerSheetProps } from './map/LocationPickerSheet'
