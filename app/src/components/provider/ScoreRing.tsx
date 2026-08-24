@@ -59,7 +59,7 @@ export function ScoreRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          className="stroke-brand-500 transition-[stroke-dashoffset] duration-1000 ease-out dark:stroke-brand-400"
+          className="stroke-brand-500 transition-[stroke-dashoffset] duration-1000 ease-out motion-reduce:transition-none dark:stroke-brand-400"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">

@@ -50,7 +50,7 @@ export function Modal({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
       <div
-        className="absolute inset-0 animate-fade-in bg-neutral-950/60 backdrop-blur-[2px]"
+        className="absolute inset-0 animate-fade-in bg-neutral-950/60 backdrop-blur-[2px] motion-reduce:animate-none"
         onClick={closeOnBackdrop ? onClose : undefined}
         aria-hidden
       />
@@ -59,7 +59,7 @@ export function Modal({
         aria-modal="true"
         aria-label={typeof title === 'string' ? title : undefined}
         className={cn(
-          'relative z-10 flex max-h-[88dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-pop animate-slide-up dark:bg-neutral-900 sm:max-h-[85vh] sm:rounded-modal',
+          'relative z-10 flex max-h-[88dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-pop animate-slide-up dark:bg-neutral-900 motion-reduce:animate-none sm:max-h-[85vh] sm:rounded-modal',
           sizeClasses[size],
           className,
         )}

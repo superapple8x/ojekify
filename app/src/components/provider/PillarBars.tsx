@@ -83,7 +83,7 @@ function PillarRow({ meta, value }: { meta: PillarMeta; value: number }) {
       >
         <div
           className={cn(
-            'h-full rounded-full transition-[width] duration-700 ease-out',
+            'h-full rounded-full transition-[width] duration-700 ease-out motion-reduce:transition-none',
             meta.barClass,
           )}
           style={{ width: `${grown ? pct : 0}%` }}
