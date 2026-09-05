@@ -3,7 +3,7 @@ import { CAMPUS_CENTER, ZONES, ZONES_BY_ID } from '../../api/zones'
 import type { PlaceSource, SelectedPlace } from '../../api/types'
 import { Button, Chip, Modal } from '../../components'
 import { MAX_SNAP_METERS, nearestZone } from '../../lib/geo'
-import { reverseGeocode, searchPlaces, type GeocodeResult } from '../../lib/geocode'
+import { reverseGeocode, searchPlacesWithStatus, type GeocodeResult, type SearchStatus } from '../../lib/geocode'
 import { useSavedPlaces } from '../../hooks/useSavedPlaces'
 import { MapCanvas } from './MapCanvas'
 
@@ -27,6 +27,7 @@ export function LocationPickerSheet({
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<GeocodeResult[]>([])
   const [searching, setSearching] = useState(false)
+  const [searchOffline, setSearchOffline] = useState(false)
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(
     value ? { lat: value.lat, lng: value.lng } : null,
   )
@@ -43,6 +44,16 @@ export function LocationPickerSheet({
   const searchAbortRef = useRef<AbortController | null>(null)
   const reverseAbortRef = useRef<AbortController | null>(null)
   const reverseTimerRef = useRef<number | null>(null)
+  // Generation counter: only the latest search fetch may write results.
+  // Superseded (aborted) fetches return early so the spinner can't stick.
+  const searchSeqRef = useRef(0)
+  // Latest-position ref for search bias: the debounced search reads bias at
+  // fire time so dragging the pin doesn't refetch the same query (which hid
+  // results behind "Mencari…" and wasted Photon quota).
+  const biasRef = useRef<{ lat: number; lng: number }>(CAMPUS_CENTER)
+  useEffect(() => {
+    biasRef.current = marker ?? mapCenter
+  })
 
   // Cancels any pending debounced reverse (timer + in-flight fetch).
   // Declared before effects below that call it on open/value sync.
@@ -86,35 +97,46 @@ export function LocationPickerSheet({
     setQuery('')
     setResults([])
     setSearching(false)
+    setSearchOffline(false)
+    // Invalidate any in-flight search from before open — it must not write.
+    searchSeqRef.current++
     setGpsState('idle')
     setGpsHint(null)
   }, [open, value, cancelReverse])
 
-  // Debounced search ~300ms + AbortController
+  // Debounced search ~300ms + AbortController. Deps [query] only — bias is
+  // read from biasRef at fire time so pin drags don't refetch the same query.
+  // Only the latest fetch (by generation counter) may write state, so an
+  // aborted/superseded fetch can never leave the spinner stuck on "Mencari…".
   useEffect(() => {
     const q = query.trim()
     if (!q) {
       setResults([])
       setSearching(false)
+      setSearchOffline(false)
       searchAbortRef.current?.abort()
       return
     }
 
     setSearching(true)
     const timer = window.setTimeout(async () => {
+      const seq = ++searchSeqRef.current
       searchAbortRef.current?.abort()
       const controller = new AbortController()
       searchAbortRef.current = controller
-      const lat = marker?.lat ?? mapCenter.lat
-      const lng = marker?.lng ?? mapCenter.lng
-      const hits = await searchPlaces(q, {
+      const { lat, lng } = biasRef.current
+      // searchPlacesWithStatus never rejects — aborts resolve to [] — so a
+      // plain generation check suffices; no try/finally needed.
+      const status: SearchStatus = await searchPlacesWithStatus(q, {
         signal: controller.signal,
         limit: 6,
         lat,
         lng,
       })
-      if (controller.signal.aborted) return
-      setResults(hits)
+      // Superseded by a newer keystroke's fetch — it owns the state.
+      if (searchSeqRef.current !== seq) return
+      setResults(status.results)
+      setSearchOffline(status.offline)
       setSearching(false)
     }, 300)
 
@@ -122,7 +144,9 @@ export function LocationPickerSheet({
       clearTimeout(timer)
       // keep abort for next effect; don't abort immediately on debounce cancel
     }
-  }, [query, marker?.lat, marker?.lng, mapCenter.lat, mapCenter.lng])
+    // bias via biasRef on purpose — pin moves must not refetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query])
 
   // Debounced reverse geocode ~500ms when marker moves.
   // Stable identity: reads pendingSourceRef at fire time, so pin moves never
@@ -369,6 +393,8 @@ export function LocationPickerSheet({
                     </li>
                   ))}
                 </ul>
+              ) : searchOffline ? (
+                <p className="px-3 py-3 text-xs text-neutral-400" role="status">Tidak dapat mencari — periksa koneksi internetmu, atau geser pin manual 📍</p>
               ) : (
                 <p className="px-3 py-3 text-xs text-neutral-400">Tidak ada hasil — coba kata kunci lain atau geser pin.</p>
               )}
