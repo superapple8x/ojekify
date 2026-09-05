@@ -143,9 +143,11 @@ export function RouteStep({ pickup, dropoff: dropoffPlace, onChange }: RouteStep
             value={placeLabel}
             onChange={(event) => setPlaceLabel(event.target.value)}
             placeholder={`Label, mis. "${pickup.label}"`}
+            maxLength={40}
+            autoComplete="off"
             className="h-10 w-full flex-1 rounded-xl border-2 border-neutral-200 bg-white px-3.5 text-sm font-semibold text-neutral-900 transition-colors focus:border-brand-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
-          <Button size="sm" className="shrink-0" disabled={!pickupZoneId}>
+          <Button type="submit" size="sm" className="shrink-0" disabled={!pickupZoneId}>
             Simpan
           </Button>
         </form>
