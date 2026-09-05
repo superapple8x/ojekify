@@ -302,10 +302,14 @@ export function LocationPickerSheet({
 
   const isFar = Boolean(nearest && nearest.meters > MAX_SNAP_METERS)
 
-  const canConfirm = Boolean(marker && nearest && !isFar)
+  // While a pin/gps reverse is still loading with no explicit pick yet,
+  // confirming would fall back to a stale reverseDetail or bare zone name.
+  const reversePending = reverseLoading && (pendingSource === 'pin' || pendingSource === 'gps') && !pending
+
+  const canConfirm = Boolean(marker && nearest && !isFar && !reversePending)
 
   const handleConfirm = useCallback(() => {
-    if (!marker || !nearest || isFar) return
+    if (!marker || !nearest || isFar || reversePending) return
     const label = pending?.label ?? reverseDetail ?? nearest.zone.name
     const detail = pending?.detail ?? reverseDetail
     const place: SelectedPlace = {
@@ -318,11 +322,15 @@ export function LocationPickerSheet({
     }
     onChange(place)
     onClose()
-  }, [marker, nearest, isFar, pending, reverseDetail, pendingSource, onChange, onClose])
+  }, [marker, nearest, isFar, reversePending, pending, reverseDetail, pendingSource, onChange, onClose])
 
   const addressCaption = reverseLoading
     ? 'Memuat alamat…'
     : (pending?.detail ?? reverseDetail ?? (marker ? 'Geser pin untuk memilih lokasi' : 'Cari alamat atau geser pin'))
+
+  // Screen-reader announcements for the combobox result list.
+  const showResults = Boolean(query.trim())
+  const resultCount = showResults && !searching ? results.length : 0
 
   return (
     <Modal
@@ -331,9 +339,16 @@ export function LocationPickerSheet({
       title={title}
       size="lg"
       footer={
-        <Button block disabled={!canConfirm} onClick={handleConfirm}>
-          Gunakan lokasi ini
-        </Button>
+        <div className="space-y-2">
+          <Button block disabled={!canConfirm} onClick={handleConfirm}>
+            Gunakan lokasi ini
+          </Button>
+          {reversePending && (
+            <p className="text-center text-xs font-semibold text-neutral-400 dark:text-neutral-500" role="status">
+              Tunggu alamat termuat…
+            </p>
+          )}
+        </div>
       }
     >
       <div className="space-y-4">
@@ -343,8 +358,16 @@ export function LocationPickerSheet({
             <span aria-hidden className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-neutral-400">
               🔍
             </span>
+            <label htmlFor="location-search" className="sr-only">
+              Cari alamat, gedung, atau tempat
+            </label>
             <input
+              id="location-search"
               type="text"
+              role="combobox"
+              aria-expanded={showResults}
+              aria-controls="location-search-results"
+              aria-autocomplete="list"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Cari alamat, gedung, atau tempat…"
@@ -367,16 +390,19 @@ export function LocationPickerSheet({
               </button>
             )}
           </div>
+          <p className="sr-only" role="status">
+            {searching ? 'Mencari alamat…' : showResults ? `${resultCount} hasil pencarian` : ''}
+          </p>
 
           {/* Search states */}
-          {query.trim() && (
-            <div className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          {showResults && (
+            <div id="location-search-results" className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
               {searching ? (
                 <p className="px-3 py-3 text-xs text-neutral-400">Mencari…</p>
               ) : results.length > 0 ? (
-                <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                <ul role="listbox" aria-label="Hasil pencarian alamat" className="divide-y divide-neutral-100 dark:divide-neutral-800">
                   {results.map((hit, idx) => (
-                    <li key={`${hit.label}-${idx}`}>
+                    <li key={`${hit.label}-${idx}`} role="option" aria-selected="false">
                       <button
                         type="button"
                         onClick={() => handleSelectSearch(hit)}
@@ -402,7 +428,7 @@ export function LocationPickerSheet({
           )}
 
           {/* Empty-query: saved + quick picks */}
-          {!query.trim() && (
+          {!showResults && (
             <div className="space-y-3">
               {places.length > 0 && (
                 <div className="space-y-1.5">
