@@ -20,7 +20,9 @@ import { CAMPUS_CENTER } from '../api/zones'
 
 const PHOTON_BASE = 'https://photon.komoot.io'
 const DEFAULT_LIMIT = 6
-const LANG = 'id'
+// Photon only supports default/de/en/fr — 'id' yields HTTP 400 for every
+// request. 'default' returns local names, which is what we want in Indralaya.
+const LANG = 'default'
 const REQUEST_TIMEOUT_MS = 8_000
 const CACHE_TTL_MS = 60_000
 const MAX_CACHE_ENTRIES = 200

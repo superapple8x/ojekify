@@ -12,14 +12,13 @@ export interface MapCanvasProps {
   interactive?: boolean
 }
 
-// CartoDB basemaps for both themes (same provider family, free with
-// attribution): Voyager (light) + dark_all (dark). Both support {s}
-// subdomains and {r} retina tiles — OSM's tile.openstreetmap.org supports
-// neither, so it can't do retina without 404s.
-const LIGHT_TILES = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
-const LIGHT_ATTRIB = '© OpenStreetMap contributors © CARTO'
-const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-const DARK_ATTRIB = '© OpenStreetMap contributors © CARTO'
+// Plain OSM standard tiles for both themes — keyless. CARTO basemaps
+// (basemaps.cartocdn.com) now stamp "API KEY REQUIRED" watermarks without a
+// registered key, so they can't be used here. Dark mode is done with a CSS
+// filter on the tile pane (see .pilihjek-tiles-dark in index.css) — markers
+// live in their own pane and keep their colors.
+const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+const ATTRIB = '© OpenStreetMap contributors'
 
 function createBrandIcon(): L.DivIcon {
   return L.divIcon({
@@ -41,7 +40,6 @@ export function MapCanvas({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
-  const tileLayerRef = useRef<L.TileLayer | null>(null)
   const { isDark } = useTheme()
 
   // Latest-callback refs: Leaflet handlers are bound once (init / marker
@@ -72,13 +70,12 @@ export function MapCanvas({
       maxBoundsViscosity: 0.8,
     }).setView([center.lat, center.lng], zoom)
 
-    const tiles = L.tileLayer(isDark ? DARK_TILES : LIGHT_TILES, {
-      attribution: isDark ? DARK_ATTRIB : LIGHT_ATTRIB,
+    L.tileLayer(TILES, {
+      attribution: ATTRIB,
       maxZoom: 19,
     }).addTo(map)
 
     mapRef.current = map
-    tileLayerRef.current = tiles
 
     const onClick = (e: L.LeafletMouseEvent) => {
       if (!interactiveRef.current) return
@@ -90,27 +87,11 @@ export function MapCanvas({
       map.off('click', onClick)
       map.remove()
       mapRef.current = null
-      tileLayerRef.current = null
       markerRef.current = null
     }
-    // init once — center/zoom handled by separate effect, tiles by isDark effect
+    // init once — center/zoom handled by separate effect
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // Tile switch on theme
-  const prevIsDarkRef = useRef(isDark)
-  useEffect(() => {
-    const map = mapRef.current
-    if (!map || !tileLayerRef.current) return
-    if (prevIsDarkRef.current === isDark) return
-    prevIsDarkRef.current = isDark
-    map.removeLayer(tileLayerRef.current)
-    const next = L.tileLayer(isDark ? DARK_TILES : LIGHT_TILES, {
-      attribution: isDark ? DARK_ATTRIB : LIGHT_ATTRIB,
-      maxZoom: 19,
-    }).addTo(map)
-    tileLayerRef.current = next
-  }, [isDark])
 
   // Marker management
   useEffect(() => {
@@ -237,7 +218,11 @@ export function MapCanvas({
   return (
     <div
       ref={containerRef}
-      className={cn('h-64 w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800', className)}
+      className={cn(
+        'h-64 w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800',
+        isDark && 'pilihjek-tiles-dark',
+        className,
+      )}
       role="region"
       aria-label="Peta lokasi"
     />

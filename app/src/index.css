@@ -124,3 +124,9 @@
 .leaflet-bottom {
   z-index: 1 !important;
 }
+
+/* Leaflet dark mode: OSM ships light tiles only, so invert them in dark
+   mode. Scoped to the tile pane — markers/controls keep their colors. */
+.pilihjek-tiles-dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92);
+}
