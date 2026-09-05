@@ -44,16 +44,39 @@ export function LocationPickerSheet({
   const reverseAbortRef = useRef<AbortController | null>(null)
   const reverseTimerRef = useRef<number | null>(null)
 
+  // Cancels any pending debounced reverse (timer + in-flight fetch).
+  // Declared before effects below that call it on open/value sync.
+  const cancelReverse = useCallback(() => {
+    if (reverseTimerRef.current) window.clearTimeout(reverseTimerRef.current)
+    reverseTimerRef.current = null
+    reverseAbortRef.current?.abort()
+    reverseAbortRef.current = null
+    setReverseLoading(false)
+  }, [])
+
+  // Latest-source ref: scheduleReverse fires 500ms after scheduling, so it
+  // must read the source at fire time (not schedule time) to decide whether
+  // a fresh reverse hit may overwrite an explicit search/zone/saved pick.
+  // Mirrored from state every render; event handlers also set it
+  // synchronously alongside setPendingSource for same-tick correctness.
+  const pendingSourceRef = useRef<PlaceSource>('pin')
+  useEffect(() => {
+    pendingSourceRef.current = pendingSource
+  })
+
   // Sync from value when sheet opens / value changes externally
   useEffect(() => {
     if (!open) return
+    cancelReverse()
     if (value) {
+      pendingSourceRef.current = value.source
       setMarker({ lat: value.lat, lng: value.lng })
       setMapCenter({ lat: value.lat, lng: value.lng })
       setPending({ label: value.label, detail: value.detail, lat: value.lat, lng: value.lng })
       setPendingSource(value.source)
       setReverseDetail(value.detail)
     } else {
+      pendingSourceRef.current = 'pin'
       setMarker(null)
       setMapCenter(CAMPUS_CENTER)
       setPending(null)
@@ -65,7 +88,7 @@ export function LocationPickerSheet({
     setSearching(false)
     setGpsState('idle')
     setGpsHint(null)
-  }, [open, value])
+  }, [open, value, cancelReverse])
 
   // Debounced search ~300ms + AbortController
   useEffect(() => {
@@ -101,11 +124,12 @@ export function LocationPickerSheet({
     }
   }, [query, marker?.lat, marker?.lng, mapCenter.lat, mapCenter.lng])
 
-  // Debounced reverse geocode ~500ms when marker moves
+  // Debounced reverse geocode ~500ms when marker moves.
+  // Stable identity: reads pendingSourceRef at fire time, so pin moves never
+  // resurrect a stale closure over a previous source.
   const scheduleReverse = useCallback(
     (pos: { lat: number; lng: number }) => {
-      if (reverseTimerRef.current) window.clearTimeout(reverseTimerRef.current)
-      reverseAbortRef.current?.abort()
+      cancelReverse()
       setReverseLoading(true)
       reverseTimerRef.current = window.setTimeout(async () => {
         const controller = new AbortController()
@@ -118,7 +142,8 @@ export function LocationPickerSheet({
           setPending((prev) => {
             if (!prev) return hit
             // if pending source is search/zone/saved, keep it until explicit change
-            if (pendingSource === 'search' || pendingSource === 'zone' || pendingSource === 'saved') {
+            const src = pendingSourceRef.current
+            if (src === 'search' || src === 'zone' || src === 'saved') {
               return prev
             }
             return hit
@@ -129,7 +154,7 @@ export function LocationPickerSheet({
         setReverseLoading(false)
       }, 500)
     },
-    [pendingSource],
+    [cancelReverse],
   )
 
   useEffect(() => {
@@ -140,25 +165,35 @@ export function LocationPickerSheet({
     }
   }, [])
 
+  // Stable identity (only scheduleReverse dep, itself stable) so MapCanvas
+  // never re-binds Leaflet handlers on source flips. Reads the *previous*
+  // source from the ref before overwriting it, to decide whether an explicit
+  // search/zone/saved pick must be cleared for the fresh pin position.
   const handleMarkerChange = useCallback(
     (pos: { lat: number; lng: number }) => {
+      const prevSource = pendingSourceRef.current
+      pendingSourceRef.current = 'pin'
       setMarker(pos)
       setMapCenter(pos)
       setPendingSource('pin')
       // clear search-persisted pending so reverse can update label
       setPending((prev) => {
-        if (prev && (pendingSource === 'search' || pendingSource === 'zone' || pendingSource === 'saved')) {
+        if (prev && (prevSource === 'search' || prevSource === 'zone' || prevSource === 'saved')) {
           return null
         }
         return prev
       })
       scheduleReverse(pos)
     },
-    [pendingSource, scheduleReverse],
+    [scheduleReverse],
   )
 
   const handleSelectSearch = useCallback(
     (hit: GeocodeResult) => {
+      // Explicit pick wins — drop any in-flight reverse from a prior pin move
+      // so it can't overwrite this selection's label/detail.
+      cancelReverse()
+      pendingSourceRef.current = 'search'
       setMarker({ lat: hit.lat, lng: hit.lng })
       setMapCenter({ lat: hit.lat, lng: hit.lng })
       setPending(hit)
@@ -167,24 +202,28 @@ export function LocationPickerSheet({
       setQuery('')
       setResults([])
     },
-    [],
+    [cancelReverse],
   )
 
   const handleQuickPick = useCallback((zoneId: string) => {
     const zone = ZONES_BY_ID[zoneId]
     if (!zone) return
+    cancelReverse()
+    pendingSourceRef.current = 'zone'
     const pos = { lat: zone.lat, lng: zone.lng }
     setMarker(pos)
     setMapCenter(pos)
     setPending({ label: zone.name, detail: zone.area === 'kampus' ? 'Dalam Kampus' : 'Luar Kampus', lat: zone.lat, lng: zone.lng })
     setPendingSource('zone')
     setReverseDetail(zone.area === 'kampus' ? 'Dalam Kampus, Indralaya' : 'Luar Kampus, Indralaya')
-  }, [])
+  }, [cancelReverse])
 
   const handleSavedPick = useCallback(
     (savedId: string) => {
       const saved = places.find((p) => p.id === savedId)
       if (!saved) return
+      cancelReverse()
+      pendingSourceRef.current = 'saved'
       const zone = ZONES_BY_ID[saved.zoneId]
       const pos =
         typeof saved.lat === 'number' && typeof saved.lng === 'number'
@@ -198,7 +237,7 @@ export function LocationPickerSheet({
       setPendingSource('saved')
       setReverseDetail(saved.detail ?? zone?.name)
     },
-    [places],
+    [places, cancelReverse],
   )
 
   const handleGps = useCallback(() => {
@@ -212,6 +251,7 @@ export function LocationPickerSheet({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const next = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        pendingSourceRef.current = 'gps'
         setMarker(next)
         setMapCenter(next)
         setPendingSource('gps')

@@ -40,6 +40,15 @@ export function MapCanvas({
   const tileLayerRef = useRef<L.TileLayer | null>(null)
   const { isDark } = useTheme()
 
+  // Latest-callback refs: Leaflet handlers are bound once (init / marker
+  // creation), so they must read current props via refs instead of closures.
+  const onMarkerChangeRef = useRef(onMarkerChange)
+  const interactiveRef = useRef(interactive)
+  useEffect(() => {
+    onMarkerChangeRef.current = onMarkerChange
+    interactiveRef.current = interactive
+  })
+
   // Init / destroy map
   useEffect(() => {
     if (!containerRef.current) return
@@ -59,8 +68,8 @@ export function MapCanvas({
     tileLayerRef.current = tiles
 
     const onClick = (e: L.LeafletMouseEvent) => {
-      if (!interactive) return
-      onMarkerChange({ lat: e.latlng.lat, lng: e.latlng.lng })
+      if (!interactiveRef.current) return
+      onMarkerChangeRef.current({ lat: e.latlng.lat, lng: e.latlng.lng })
     }
     map.on('click', onClick)
 
@@ -111,7 +120,7 @@ export function MapCanvas({
       }).addTo(map)
       m.on('dragend', () => {
         const ll = m.getLatLng()
-        onMarkerChange({ lat: ll.lat, lng: ll.lng })
+        onMarkerChangeRef.current({ lat: ll.lat, lng: ll.lng })
       })
       markerRef.current = m
     } else {
@@ -125,7 +134,11 @@ export function MapCanvas({
         else markerRef.current.dragging.disable()
       }
     }
-  }, [marker, interactive, onMarkerChange])
+  // NOTE: onMarkerChange intentionally omitted — Leaflet handlers bound above
+  // read it via onMarkerChangeRef, so including it would only churn
+  // dragging state on every parent re-render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marker, interactive])
 
   // Imperative setView when center prop changes externally (search/GPS)
   useEffect(() => {
