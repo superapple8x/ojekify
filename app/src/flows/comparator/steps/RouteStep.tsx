@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
-import { api, distanceKm } from '../../../api'
-import type { SelectedPlace, Zone } from '../../../api'
+import { useState } from 'react'
+import { distanceKm } from '../../../api'
+import type { SelectedPlace } from '../../../api'
+import { ZONES_BY_ID } from '../../../api/zones'
 import { formatKm } from '../../../lib/format'
 import { Button, Chip, LocationPicker } from '../../../components'
 import { useSavedPlaces } from '../../../hooks/useSavedPlaces'
@@ -12,17 +13,8 @@ export interface RouteStepProps {
 }
 
 export function RouteStep({ pickup, dropoff: dropoffPlace, onChange }: RouteStepProps) {
-  const [zones, setZones] = useState<Zone[]>([])
   const { places, savePlace, removePlace } = useSavedPlaces()
   const [placeLabel, setPlaceLabel] = useState('')
-
-  useEffect(() => {
-    let alive = true
-    api.getZones().then((items) => alive && setZones(items))
-    return () => {
-      alive = false
-    }
-  }, [])
 
   const pickupZoneId = pickup?.zoneId ?? ''
   const bothChosen = Boolean(pickup && dropoffPlace)
@@ -56,7 +48,7 @@ export function RouteStep({ pickup, dropoff: dropoffPlace, onChange }: RouteStep
         {places.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {places.map((place) => {
-              const zone = zones.find((candidate) => candidate.id === place.zoneId)
+              const zone = ZONES_BY_ID[place.zoneId]
               return (
                 <Chip
                   key={place.id}

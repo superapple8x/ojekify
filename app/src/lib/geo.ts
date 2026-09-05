@@ -1,7 +1,6 @@
 import type { Zone } from '../api/types'
 
 const R_METERS = 6_371_000 // Earth radius in meters
-const R_KM = 6_371
 
 function toRad(deg: number): number {
   return (deg * Math.PI) / 180
@@ -33,19 +32,6 @@ export function distanceKm(
   b: { lat: number; lng: number },
 ): number {
   return distanceMeters(a, b) / 1000
-}
-
-/** Back-compat alias for priceEngine (R=6371 km version). Kept for precision parity. */
-export function haversineKm(
-  a: { lat: number; lng: number },
-  b: { lat: number; lng: number },
-): number {
-  const dLat = toRad(b.lat - a.lat)
-  const dLng = toRad(b.lng - a.lng)
-  const hav =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
-  return R_KM * 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1 - hav))
 }
 
 /**
