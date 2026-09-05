@@ -12,10 +12,14 @@ export interface MapCanvasProps {
   interactive?: boolean
 }
 
-const LIGHT_TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-const LIGHT_ATTRIB = '© OpenStreetMap'
+// CartoDB basemaps for both themes (same provider family, free with
+// attribution): Voyager (light) + dark_all (dark). Both support {s}
+// subdomains and {r} retina tiles — OSM's tile.openstreetmap.org supports
+// neither, so it can't do retina without 404s.
+const LIGHT_TILES = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+const LIGHT_ATTRIB = '© OpenStreetMap contributors © CARTO'
 const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-const DARK_ATTRIB = '© OpenStreetMap © CARTO'
+const DARK_ATTRIB = '© OpenStreetMap contributors © CARTO'
 
 function createBrandIcon(): L.DivIcon {
   return L.divIcon({
@@ -57,6 +61,15 @@ export function MapCanvas({
     const map = L.map(containerRef.current, {
       zoomControl: false,
       attributionControl: true,
+      // Service area is Indralaya + surroundings — keep users from panning
+      // to nowhere and getting lost. Markers themselves may still sit
+      // outside (e.g. far GPS fix); the sheet's isFar guard handles that.
+      minZoom: 12,
+      maxBounds: L.latLngBounds(
+        L.latLng(-3.3, 103.9),
+        L.latLng(-2.5, 105.3),
+      ),
+      maxBoundsViscosity: 0.8,
     }).setView([center.lat, center.lng], zoom)
 
     const tiles = L.tileLayer(isDark ? DARK_TILES : LIGHT_TILES, {
@@ -153,7 +166,8 @@ export function MapCanvas({
     }
   }, [center.lat, center.lng, zoom])
 
-  // Enable/disable interaction
+  // Enable/disable interaction (all handlers — a partial toggle would still
+  // let touch/keyboard users move a supposedly static map)
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
@@ -161,35 +175,61 @@ export function MapCanvas({
       map.dragging.enable()
       map.scrollWheelZoom.enable()
       map.doubleClickZoom.enable()
+      map.touchZoom.enable()
+      map.boxZoom.enable()
+      map.keyboard.enable()
     } else {
       map.dragging.disable()
       map.scrollWheelZoom.disable()
       map.doubleClickZoom.disable()
+      map.touchZoom.disable()
+      map.boxZoom.disable()
+      map.keyboard.disable()
     }
   }, [interactive])
 
-  // Invalidate size after container resizes / sheet opens
+  // Invalidate size after container resizes / sheet opens.
+  // The Modal sheet animates slide-up 0.32s — measuring mid-transform yields
+  // a wrong size and grey tiles, so invalidate once early (first paint) and
+  // once after the animation settles. The ResizeObserver is a debounced
+  // follow-up for later resizes (keyboard, rotation).
   useEffect(() => {
     const map = mapRef.current
     const el = containerRef.current
     if (!map || !el) return
 
-    const invalidate = () => map.invalidateSize()
+    let disposed = false
+    const timeouts: number[] = []
+    const invalidate = () => {
+      if (disposed || document.hidden) return
+      map.invalidateSize()
+    }
 
-    // initial + after animation frame
     const raf = requestAnimationFrame(() => {
       invalidate()
-      setTimeout(invalidate, 120)
+      timeouts.push(window.setTimeout(invalidate, 380))
     })
 
+    let pending = false
     let observer: ResizeObserver | null = null
     if (typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(() => invalidate())
+      observer = new ResizeObserver(() => {
+        if (pending) return
+        pending = true
+        timeouts.push(
+          window.setTimeout(() => {
+            pending = false
+            invalidate()
+          }, 100),
+        )
+      })
       observer.observe(el)
     }
 
     return () => {
+      disposed = true
       cancelAnimationFrame(raf)
+      timeouts.forEach((t) => window.clearTimeout(t))
       observer?.disconnect()
     }
   }, [])
@@ -198,7 +238,7 @@ export function MapCanvas({
     <div
       ref={containerRef}
       className={cn('h-64 w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800', className)}
-      role="application"
+      role="region"
       aria-label="Peta lokasi"
     />
   )
