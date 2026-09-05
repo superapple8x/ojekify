@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CAMPUS_CENTER, ZONES, ZONES_BY_ID } from '../../api/zones'
 import type { PlaceSource, SelectedPlace } from '../../api/types'
 import { Button, Chip, Modal } from '../../components'
-import { nearestZone } from '../../lib/geo'
+import { MAX_SNAP_METERS, nearestZone } from '../../lib/geo'
 import { reverseGeocode, searchPlaces, type GeocodeResult } from '../../lib/geocode'
 import { useSavedPlaces } from '../../hooks/useSavedPlaces'
 import { MapCanvas } from './MapCanvas'
@@ -230,19 +230,18 @@ export function LocationPickerSheet({
     )
   }, [scheduleReverse])
 
+  // ZONES is a non-empty const — nearestZone can't throw here.
   const nearest = useMemo(() => {
     if (!marker) return null
-    try {
-      return nearestZone(ZONES, marker)
-    } catch {
-      return null
-    }
+    return nearestZone(ZONES, marker)
   }, [marker])
 
-  const canConfirm = Boolean(marker && nearest)
+  const isFar = Boolean(nearest && nearest.meters > MAX_SNAP_METERS)
+
+  const canConfirm = Boolean(marker && nearest && !isFar)
 
   const handleConfirm = useCallback(() => {
-    if (!marker || !nearest) return
+    if (!marker || !nearest || isFar) return
     const label = pending?.label ?? reverseDetail ?? nearest.zone.name
     const detail = pending?.detail ?? reverseDetail
     const place: SelectedPlace = {
@@ -255,7 +254,7 @@ export function LocationPickerSheet({
     }
     onChange(place)
     onClose()
-  }, [marker, nearest, pending, reverseDetail, pendingSource, onChange, onClose])
+  }, [marker, nearest, isFar, pending, reverseDetail, pendingSource, onChange, onClose])
 
   const addressCaption = reverseLoading
     ? 'Memuat alamat…'
@@ -409,9 +408,15 @@ export function LocationPickerSheet({
           </p>
         </div>
 
-        {nearest && (
+        {nearest && !isFar && (
           <p className="rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300" aria-live="polite">
             Tarif dihitung dari zona terdekat: {nearest.zone.emoji} {nearest.zone.name} (± {Math.round(nearest.meters)} m)
+          </p>
+        )}
+
+        {nearest && isFar && (
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 dark:bg-red-500/10 dark:text-red-300" role="alert">
+            Lokasi di luar jangkauan (± {nearest.meters >= 10_000 ? `${Math.round(nearest.meters / 1000)} km` : `${Math.round(nearest.meters)} m`} dari {nearest.zone.name}) — geser pin ke sekitar Indralaya ya.
           </p>
         )}
       </div>

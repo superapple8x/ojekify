@@ -73,6 +73,10 @@ export function SummaryStep({
   }, [])
 
   const deliverToZone = deliverTo ? zones.find((zone) => zone.id === deliverTo.zoneId) : undefined
+  // Zones load async — only treat as unknown once the list arrived.
+  // Without this, an unresolvable zoneId would silently fall back to the
+  // kampus base fare in estimatePrintDeliveryFee.
+  const deliverToZoneUnknown = Boolean(deliverTo && zones.length > 0 && !deliverToZone)
   const deliverToLabel = deliverTo?.label ?? deliverToZone?.name ?? ''
   const deliverToRichName = deliverTo
     ? `${deliverTo.label}${deliverTo.detail ? ` (${deliverTo.detail})` : ''}`
@@ -95,7 +99,7 @@ export function SummaryStep({
         : `Pages 1-${estimate.bwPages} (Hitam Putih), Pages ${estimate.bwPages + 1}-${pageCount} (Warna)`
 
   const message = useMemo(() => {
-    if (!customerName.trim() || !deliverTo || !fileLink) return ''
+    if (!customerName.trim() || !deliverTo || deliverToZoneUnknown || !fileLink) return ''
     return buildPrintWaMessage({
       customerName: customerName.trim(),
       deliverToName: deliverToRichName || deliverToLabel || deliverToZone?.name || '',
@@ -111,7 +115,7 @@ export function SummaryStep({
       deliveryFee: estimate.deliveryFee.total,
       total: estimate.total,
     })
-  }, [customerName, deliverTo, deliverToRichName, deliverToLabel, deliverToZone, fileLink, file.name, pageCount, paperLabel, weightLabel, colorLabel, finishingLabel, estimate])
+  }, [customerName, deliverTo, deliverToZoneUnknown, deliverToRichName, deliverToLabel, deliverToZone, fileLink, file.name, pageCount, paperLabel, weightLabel, colorLabel, finishingLabel, estimate])
 
   const waLink = useMemo(
     () => (message ? buildWaLink(PRINT_PARTNER.phone, message) : ''),
@@ -129,7 +133,7 @@ export function SummaryStep({
   }
 
   const handleOrder = async () => {
-    if (!deliverTo || !message || !waLink || opening) return
+    if (!deliverTo || deliverToZoneUnknown || !message || !waLink || opening) return
     setOpening(true)
     try {
       const order = await api.placeOrder({
@@ -207,6 +211,11 @@ export function SummaryStep({
           Cari alamat, geser pin di peta, pakai GPS, atau pilih zona populer — tarif tetap dihitung dari zona
           terdekat.
         </p>
+        {deliverToZoneUnknown && (
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 dark:bg-red-500/10 dark:text-red-300" role="alert">
+            Zona tujuan tak dikenal — estimasi ongkir belum valid. Pilih ulang lokasi antar ya.
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -285,7 +294,9 @@ export function SummaryStep({
               ? 'Isi nama dulu ya — wajib untuk template ini.'
               : !deliverTo
                 ? 'Pilih lokasi tujuan biar estimasi ongkir & pesan lengkap.'
-                : 'Buat link aman dulu — tunggu sebentar…'}
+                : deliverToZoneUnknown
+                  ? 'Zona tujuan tak dikenal — pilih ulang lokasi antar ya.'
+                  : 'Buat link aman dulu — tunggu sebentar…'}
           </p>
         )}
         {placedOrderId && (

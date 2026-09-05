@@ -49,6 +49,14 @@ export function haversineKm(
 }
 
 /**
+ * Max straight-line distance (meters) from a pin to its nearest zone
+ * for the snap-to-zone fare to be meaningful. Beyond this the pin is
+ * outside the service area — callers should warn and block confirm
+ * instead of quoting an Indralaya fare for e.g. Jakarta (≈437 km).
+ */
+export const MAX_SNAP_METERS = 20_000
+
+/**
  * Find nearest zone to a point. Linear scan — 10 zones, negligible cost.
  * Returns zone + straight-line distance in meters.
  */
