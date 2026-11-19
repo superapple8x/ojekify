@@ -1,216 +1,222 @@
-# PilihJek 🛺 — Komparator Harga Ojek & Jasa Kampus
+# PilihJek 🛺 — Bandingkan Harga Ojek & Jasa Kampus dalam Sekali Klik
 
 > **"Bandingkan, kirim, selesai."**
 
-PilihJek adalah aplikasi web untuk **mahasiswa di sekitar kampus** (dibuat dengan fokus kampus Indralaya, UNSRI) yang ingin:
+Capek buka banyak story Instagram cuma buat ngecek ongkir ojek kampus? Takut kena biaya tambahan mendadak pas hujan atau salah format chat WhatsApp?
 
-- membandingkan **harga total** beberapa provider ojek/antar lokal dalam sekali lihat,
-- tahu persis **biaya tambahan ("cas")** apa saja yang membuat tarif naik,
-- dan **order lewat WhatsApp tanpa salah format** — karena pesannya dibuatkan otomatis.
+**PilihJek** adalah aplikasi web gratis untuk **mahasiswa di sekitar kampus** (khususnya area Indralaya, UNSRI) yang membantu kamu:
 
-Gratis, **mobile-first** (enak dibuka di HP), dan ada **mode gelap** 🌙.
+- 💰 **Bandingkan harga total** dari berbagai jasa ojek & antar lokal sekaligus — langsung terlihat mana yang paling murah.
+- 🧾 **Tahu semua biaya tambahan ("cas") di awal** — hujan, malam, non-tunai, sampai kelipatan porsi, semua dihitung otomatis tanpa tebak-tebakan.
+- 💬 **Order via WhatsApp tanpa salah format** — pesan sudah disusun otomatis sesuai aturan masing-masing jasa, tinggal klik kirim.
 
-![Beranda PilihJek](docs/screenshots/01-home.png)
+Gratis, **nyaman dibuka di HP**, tanpa perlu bikin akun, dan mendukung **mode gelap** 🌙.
 
----
-
-## Masalahnya apa sih?
-
-Jasa ojek/antar lokal kampus (mis. **Kuy Jek** dan sejenisnya) jalan lewat WhatsApp dengan **price list gambar yang tersebar di Instagram**. Akibatnya:
-
-- sebelum order, kamu **nggak tahu total harga pastinya** — baru ketahuan setelah admin reply;
-- banyak **"cas" (biaya tambahan) tersembunyi**: hujan, malam, non-tunai, banyak item, mampir, top-up…;
-- tiap provider punya **format pesan WhatsApp yang kaku** — salah format bisa kena **cas format kebalik 50%** atau pesan harus dikirim ulang;
-- kadang **admin ghosting** atau driver telat, dan kamu nggak punya gambaran provider itu aman atau tidak.
-
-Ini contoh price list asli salah satu provider lokal — perhatikan kolom "CAS (Tambahan Ongkir)"-nya:
-
-![Price list asli Kuy Jek — banyak cas](concept_and_design/price%20reference%20and%20location/policy_and_price.jpg)
-
-![Price list asli Kuy Jek — rute & tarif](concept_and_design/price%20reference%20and%20location/locations_and_price.jpg)
+![Tampilan Beranda PilihJek](docs/screenshots/01-home.png)
 
 ---
 
-## Jadi, apa itu PilihJek?
+## Daftar Isi
 
-PilihJek **bukan layanan ojek baru** — kami tidak merekrut driver. PilihJek adalah **aggregator / komparator**: price list dari provider lokal yang sudah ada kami gabungkan jadi satu tabel perbandingan yang **transparan dan otomatis dihitung**, lalu pesan WhatsApp-nya kami susun sesuai format tiap provider.
+- [Kenapa PilihJek?](#kenapa-pilihjek)
+- [Fitur Utama](#fitur-utama)
+- [Cara Pakai](#cara-pakai)
+- [Contoh Hitungan Nyata](#contoh-hitungan-nyata)
+- [Pertanyaan yang Sering Ditanyakan (FAQ)](#pertanyaan-yang-sering-ditanyakan-faq)
+- [Catatan Versi Uji Coba](#catatan-versi-uji-coba)
+
+---
+
+## Kenapa PilihJek?
+
+Jasa ojek dan antar lokal di sekitar kampus (seperti **Kuy Jek** dan sejenisnya) biasanya beroperasi lewat WhatsApp dengan daftar harga berupa gambar yang tersebar di Instagram. Akibatnya:
+
+- **Harga asli baru ketahuan belakangan** setelah admin membalas chat.
+- **Banyak biaya tambahan ("cas") yang bikin kaget** — mulai dari cas hujan, jam malam, bayar non-tunai, banyak porsi, mampir ke toko lain, sampai top-up.
+- **Format chat tiap jasa beda-beda dan kaku** — salah urutan format saja bisa bikin pesan harus diulang atau bahkan kena **denda 50%**.
+- **Susah tahu mana jasa yang amanah** — tidak ada gambaran apakah adminnya fast respon atau sering menghilang (*ghosting*).
+
+<details>
+<summary>Lihat contoh daftar harga asli jasa lokal kampus (dengan berbagai aturan cas)</summary>
+
+![Daftar harga dan aturan cas jasa lokal](concept_and_design/price%20reference%20and%20location/policy_and_price.jpg)
+
+![Daftar rute dan tarif jasa lokal](concept_and_design/price%20reference%20and%20location/locations_and_price.jpg)
+
+</details>
+
+**PilihJek bukan layanan ojek baru.** Kami mengumpulkan daftar harga dari jasa-jasa lokal yang sudah ada, menghitungkan total biayanya secara transparan, lalu menyiapkan pesan WhatsApp yang rapi agar kamu bisa langsung order.
 
 | Sebelum pakai PilihJek | Pakai PilihJek |
 |---|---|
-> Buka 3–5 story IG, cocokkan harga, nebak cas-nya | Pilih layanan + rute + kondisi → **semua provider langsung terhitung dan terurut** |
-| Ketik pesan WA manual, takut salah format kena denda 50% | Pesan **dibuat otomatis sesuai format provider**, tombol order aktif setelah data lengkap |
-| Bingung provider ini aman atau sering telat | Lihat **rating, vibe tag, dan riwayat masalah** provider sebelum order |
+| Buka 3–5 akun IG, cocokkan tarif, lalu nebak sendiri biaya tambahannya | Pilih layanan, rute, dan kondisi → **semua jasa langsung terhitung & terurut dari yang termurah** |
+| Ketik pesan WA manual, deg-degan salah format kena denda 50% | Pesan **otomatis disusun sesuai format masing-masing jasa**, tinggal kirim |
+| Tebak-tebakan jasa ini fast respon atau sering telat | Cek **rating, ulasan, dan label karakter jasa** sebelum order |
 
 ---
 
-## Fitur
+## Fitur Utama
 
-### 1. Bandingkan harga semua provider 💰
+### 1. Bandingkan Semua Jasa Sekaligus 💰
 
-Alur 4 langkah: **Layanan → Rute → Ketentuan → Ekstra**. Langkah yang muncul menyesuaikan pilihanmu (conditional form), jadi nggak ribet.
+Cukup isi 4 langkah singkat: **Layanan → Rute → Kondisi → Detail Tambahan**. Pilihan yang muncul akan menyesuaikan kebutuhanmu, jadi tidak ribet.
 
-![Pilih layanan](docs/screenshots/03-compare-service.png)
-![Pilih rute jemput & antar](docs/screenshots/04-compare-route.png)
+- Pilih **zona populer**, cari alamat, geser pin di peta, atau pakai **GPS** — tarif tetap dihitung rapi berdasarkan zona terdekat.
+- Hasil langsung diurutkan dari yang **termurah**, lengkap dengan estimasi waktu respon admin, rating, dan label (*Termurah*, *Respon Tercepat*, *Tanpa Biaya Tersembunyi*).
 
-Kamu memilih **zona** (bukan ketik alamat panjang) — bisa dari zona populer, cari alamat, geser pin di peta, atau pakai GPS. Tarif tetap dihitung dari zona terdekat, jadi tidak bisa "nyasar".
+| Pilih Layanan | Pilih Rute Jemput & Antar |
+|---|---|
+| ![Pilih layanan](docs/screenshots/03-compare-service.png) | ![Pilih rute](docs/screenshots/04-compare-route.png) |
 
-![Ketentuan: hujan, non-tunai, jam malam](docs/screenshots/05-compare-conditions.png)
-![Ekstra: jumlah porsi/item](docs/screenshots/06-compare-extras.png)
+| Kondisi (Hujan, Non-Tunai, Malam) | Detail Tambahan (Porsi/Item) |
+|---|---|
+| ![Kondisi](docs/screenshots/05-compare-conditions.png) | ![Detail tambahan](docs/screenshots/06-compare-extras.png) |
 
-Hasilnya: daftar provider **terurut dari termurah**, lengkap dengan rating, waktu respon, dan tag (Termurah / Respon Tercepat / Tanpa Biaya Tersembunyi). Kamu bisa urutkan ulang menurut harga atau rating.
-
-![Hasil komparasi](docs/screenshots/07-compare-results.png)
-
-### 2. Rincian biaya transparan — "Transparent Receipt" 🧾
-
-Tap harga mana pun untuk melihat **rincian persis**: biaya dasar + setiap cas (hujan, non-tunai, malam, kelipatan item, dst). Rincian ini ikut terkirim di pesan WhatsApp, jadi admin dan kamu sudah sepakat duluan — **tidak ada biaya di luar yang tercantum**.
-
-![Rincian biaya per provider](docs/screenshots/08-receipt.png)
-
-### 3. Pesan WhatsApp otomatis sesuai format provider 💬
-
-Setiap provider punya format baku yang berbeda (ada yang pakai ` - `, ada yang pakai ` | `, ada yang wajib tulis nama). PilihJek menyusun pesan yang **sudah sesuai format provider itu**, lengkap dengan link Google Maps lokasi jemput/antar dan ringkasan harga. Satu tap **"Order via WhatsApp"** → chat terbuka dengan pesan sudah terisi.
-
-![Preview pesan WhatsApp otomatis](docs/screenshots/09-wa-preview.png)
-
-### 4. Cetak & Antar dokumen 🖨️
-
-Alur khusus untuk cetak: **upload PDF → pilih pengaturan cetak → ringkasan & order**.
-
-- File PDF dihitung jumlah halamannya otomatis (biar kamu tahu estimasi harganya).
-- Pilih warna (hitam putih / full warna / campuran per halaman), kertas (A4/F4/A3, HVS 70/80 gr), dan jilid (staples, lakban, spiral).
-- Biaya **dicetak terpisah dari ongkir**: `cetak + jilid + ongkir + cas print`, semua dijumlah jadi satu total.
-- File tidak dikirim lewat WA — kamu dapat **link aman sekali pakai** yang bisa dibuka admin langsung dari komputer fotokopian.
-
-![Upload PDF](docs/screenshots/11-print-upload.png)
-![Pengaturan cetak](docs/screenshots/12-print-settings.png)
-![Ringkasan biaya cetak & antar](docs/screenshots/13-print-summary.png)
-
-### 5. Kenali provider-nya dulu: rating, vibe tag, Wall of Fame 🏆
-
-Sebelum order, cek direktori provider: rating per pilar (**kecepatan, keamanan barang, kejujuran tarif**), vibe tag ala mahasiswa (*Penyelamat Skripsi*, *Admin Fast Respon*, *Anti-Nyasar*, atau red flag seperti *Suka Minta Tambahan*, *Admin Jutek*), tier kepercayaan (Newbie / Verified / Kampus Legend), dan **Wall of Fame** mingguan.
-
-![Direktori provider](docs/screenshots/14-providers.png)
-![Profil & ulasan provider](docs/screenshots/15-provider-profile.png)
-
-Kalau sudah order tapi **admin ghosting** atau **driver tidak datang**, lapor lewat tombol di halaman pesanan — laporannya mengurangi skor keandalan provider dan otomatis menyarankan provider alternatif.
-
-### 6. Riwayat pesanan & tempat tersimpan 📍
-
-Semua order via WhatsApp tercatat di halaman **Pesanan** (dengan status: menunggu konfirmasi, lagi diurus, selesai, dibatalkan), dan lokasi yang sering dipakai (kost, fakultas) bisa **disimpan** di **Profil** supaya order berikutnya lebih cepat.
-
-![Riwayat pesanan](docs/screenshots/10-orders.png)
-![Profil & tempat tersimpan](docs/screenshots/16-profile.png)
-
-### 7. Ramah HP & mode gelap 📱🌙
-
-Didesain mobile-first: bottom sheet, CTA menempel, navigasi ringkas. Mode gelap aktif otomatis mengikuti setting HP kamu.
-
-![Tampilan mobile](docs/screenshots/17-home-mobile.png)
-![Beranda mode gelap](docs/screenshots/02-home-dark.png)
+![Hasil perbandingan harga semua jasa](docs/screenshots/07-compare-results.png)
 
 ---
 
-## Cara pakai
+### 2. Rincian Biaya Transparan 🧾
 
-### Bandingkan harga & order
+Ketuk harga mana saja untuk melihat **rincian biaya lengkapnya**: tarif dasar ditambah setiap biaya tambahan (hujan, non-tunai, malam, kelipatan porsi, dll.).
 
-1. Buka halaman **Bandingkan** (atau tap shortcut layanan di beranda).
-2. Pilih **layanan**: Ride 🛵 / Food Delivery 🍜 / Send Item 📦 / Print & Antar 🖨️ / Jasa ⚙️ (galon, gas, top-up, belanja).
-3. Pilih **lokasi jemput & antar** dari zona populer / cari / peta / GPS.
-4. Nyalakan **ketentuan** yang berlaku: sedang hujan 🌧️, bayar e-wallet/transfer, (jam malam terdeteksi otomatis).
-5. Isi **ekstra** sesuai layanan: jumlah porsi, jumlah toko tambahan, nominal top-up.
-6. Tap **"Siap bandingin"** → pilih provider dari daftar terurut.
-7. Cek **rincian biaya**, lalu tap **"Pesan via WA"** → **"Order via WhatsApp"** → pesan terkirim dengan format yang benar.
+Rincian ini **ikut tertulis di pesan WhatsApp**, jadi kamu dan admin sudah sepakat soal harga sejak awal — tidak ada biaya dadakan.
 
-### Cetak & antar
-
-1. Buka **Cetak & Antar**, upload file **PDF**.
-2. Pilih warna, kertas, dan jilid.
-3. Pilih lokasi antar, lihat **ringkasan biaya**, lalu **Order via WhatsApp** — link file ikut terkirim.
+![Rincian biaya transparan](docs/screenshots/08-receipt.png)
 
 ---
 
-## Contoh perhitungan nyata
+### 3. Pesan WhatsApp Otomatis Sesuai Format 💬
 
-Skenario: **Food Delivery, Dalam Kampus → Asrama (Dorm)**, sedang **hujan**, bayar **non-tunai**, beli **6 porsi**.
+Setiap jasa punya aturan format chat sendiri (ada yang pakai tanda `-`, ada yang pakai `|`, ada yang wajib mencantumkan nama). PilihJek otomatis menyusun pesan sesuai format jasa yang kamu pilih, lengkap dengan **link Google Maps** lokasi jemput/antar dan ringkasan harga.
 
-| Komponen | Kuy Jek | KampusJek (contoh kompetitor) |
+Cukup tekan **"Order via WhatsApp"**, chat langsung terbuka dengan pesan yang sudah siap kirim.
+
+![Pratinjau pesan WhatsApp otomatis](docs/screenshots/09-wa-preview.png)
+
+---
+
+### 4. Cetak & Antar Dokumen 🖨️
+
+Butuh nge-print tugas atau skripsi tanpa keluar kost? Gunakan fitur **Cetak & Antar**:
+
+- **Upload file PDF** — jumlah halaman langsung terhitung otomatis agar estimasi biaya akurat.
+- Pilih **warna** (hitam putih, full warna, atau campuran), **ukuran kertas** (A4/F4/A3), dan **jilid** (staples, lakban, spiral).
+- Rincian biaya **cetak, jilid, ongkir, dan cas tunggu** ditampilkan terpisah lalu dijumlahkan dengan jelas.
+- File tidak perlu dikirim lewat chat WA — kamu mendapat **link aman sekali pakai** yang bisa langsung dibuka pihak fotokopian.
+
+| Upload PDF | Pengaturan Cetak | Ringkasan Biaya |
+|---|---|---|
+| ![Upload PDF](docs/screenshots/11-print-upload.png) | ![Pengaturan cetak](docs/screenshots/12-print-settings.png) | ![Ringkasan cetak](docs/screenshots/13-print-summary.png) |
+
+---
+
+### 5. Kenali Jasa Sebelum Order 🏆
+
+Sebelum memilih, kamu bisa melihat profil tiap jasa di halaman **Provider**:
+
+- **Rating per aspek**: kecepatan, keamanan barang, dan kejujuran tarif.
+- **Label khas mahasiswa**: mulai dari yang positif (*Penyelamat Skripsi*, *Admin Fast Respon*, *Anti-Nyasar*) sampai peringatan (*Suka Minta Tambahan*, *Admin Jutek*).
+- **Wall of Fame** mingguan untuk melihat jasa paling dipercaya di kampus.
+- **Tombol lapor masalah**: kalau admin *ghosting* atau driver tidak datang, kamu bisa langsung lapor dari halaman pesanan — skor jasa akan disesuaikan dan PilihJek langsung merekomendasikan alternatif lain.
+
+| Direktori Jasa | Profil & Ulasan |
+|---|---|
+| ![Direktori jasa](docs/screenshots/14-providers.png) | ![Profil jasa](docs/screenshots/15-provider-profile.png) |
+
+---
+
+### 6. Riwayat Pesanan & Lokasi Tersimpan 📍
+
+Semua pesanan tercatat rapi di halaman **Pesanan**, dan lokasi yang sering kamu pakai (seperti kost, asrama, atau fakultas) bisa **disimpan di Profil** supaya order berikutnya makin cepat.
+
+| Riwayat Pesanan | Profil & Lokasi Tersimpan |
+|---|---|
+| ![Riwayat pesanan](docs/screenshots/10-orders.png) | ![Profil dan lokasi tersimpan](docs/screenshots/16-profile.png) |
+
+---
+
+### 7. Nyaman di HP & Mendukung Mode Gelap 📱🌙
+
+Dirancang agar enak dipakai langsung dari layar HP dengan satu tangan, lengkap dengan **mode gelap** yang bisa mengikuti pengaturan perangkatmu.
+
+| Tampilan HP | Mode Gelap |
+|---|---|
+| ![Tampilan mobile](docs/screenshots/17-home-mobile.png) | ![Mode gelap](docs/screenshots/02-home-dark.png) |
+
+---
+
+## Cara Pakai
+
+### Bandingkan Harga & Order
+1. Buka **Bandingkan** (atau pilih langsung ikon layanan di Beranda).
+2. Pilih layanan yang kamu butuhkan: **Ride 🛵**, **Food Delivery 🍜**, **Send Item 📦**, **Print & Antar 🖨️**, atau **Jasa ⚙️** (galon, gas, top-up, belanja).
+3. Tentukan **lokasi jemput & antar** lewat zona populer, pencarian, peta, atau GPS.
+4. Aktifkan **kondisi** yang sedang terjadi (hujan 🌧️, bayar non-tunai; jam malam terdeteksi otomatis).
+5. Isi **detail tambahan** jika ada (jumlah porsi, jumlah toko mampir, atau nominal top-up).
+6. Tekan **"Siap bandingin"**, pilih jasa yang paling cocok, cek rincian biayanya, lalu klik **"Order via WhatsApp"**.
+
+### Cetak & Antar Dokumen
+1. Buka menu **Cetak & Antar**, lalu unggah file **PDF** kamu.
+2. Pilih pengaturan warna, jenis kertas, dan jilid.
+3. Tentukan lokasi pengantaran, cek total biayanya, lalu klik **"Order via WhatsApp"** — link file otomatis ikut terkirim.
+
+---
+
+## Contoh Hitungan Nyata
+
+**Skenario:** Pesan **Food Delivery** dari **Dalam Kampus → Asrama (Dorm)**, sedang **hujan**, bayar **non-tunai**, sebanyak **6 porsi**.
+
+| Komponen Biaya | Kuy Jek | KampusJek |
 |---|---:|---:|
-| Biaya dasar (Dalam Kampus → Asrama) | Rp 6.000 | Rp 7.000 |
+| Tarif dasar (Dalam Kampus → Asrama) | Rp 6.000 | Rp 7.000 |
 | Cas Hujan | + Rp 1.000 | Rp 0 |
 | Cas Non-Tunai | + Rp 1.000 | + Rp 2.000 |
-| Cas Kelipatan Item (6 item) | + Rp 1.000 | + Rp 2.000 |
-| **Total** | **Rp 9.000** ✅ termurah | **Rp 11.000** |
+| Cas Kelipatan Item (6 porsi) | + Rp 1.000 | + Rp 2.000 |
+| **Total** | **Rp 9.000** ✅ *Termurah* | **Rp 11.000** |
 
-Tanpa PilihJek, kamu baru tahu angka ini setelah chat dengan admin dan berisiko salah format.
+### Biaya Tambahan ("Cas") yang Dihitung Otomatis
 
-### "Cas" apa saja yang dihitung otomatis?
-
-| Cas | Kapan muncul |
+| Jenis Cas | Kapan Berlaku |
 |---|---|
-| Cas Hujan | Saat order bertepatan hujan |
-| Cas Non-Tunai | Bayar via transfer / e-wallet |
-| Cas Luar Jam (Malam) | Order di luar jam operasional provider (mis. ≥ 22.00) |
-| Cas Kelipatan Item | Food delivery dengan banyak porsi/item |
-| Cas Mampir | Belanja/jasa di lebih dari satu toko |
-| Cas Top-Up | Nominal top-up e-wallet (berjenjang) |
-| Cas Print | Order cetak & antar (driver menunggu di fotokopian) |
+| **Cas Hujan** | Saat pemesanan dilakukan ketika hujan |
+| **Cas Non-Tunai** | Saat pembayaran dilakukan via transfer atau e-wallet |
+| **Cas Luar Jam (Malam)** | Saat order di luar jam operasional normal (misalnya ≥ 22.00) |
+| **Cas Kelipatan Item** | Saat memesan makanan/barang dalam jumlah banyak |
+| **Cas Mampir** | Saat belanja atau ambil barang di lebih dari satu tempat |
+| **Cas Top-Up** | Berdasarkan nominal top-up e-wallet |
+| **Cas Print** | Biaya tunggu driver di tempat fotokopi untuk layanan Cetak & Antar |
 
-Besaran tiap cas **mengikuti rules tiap provider** — ada yang tidak kenakan cas hujan, ada yang lebih mahal saat malam. Semua itu langsung tercermin di hasil perbandingan.
-
----
-
-## FAQ
-
-**Apakah PilihJek layanan ojeknya sendiri?**
-Bukan. PilihJek mempertemukanmu dengan provider lokal yang sudah ada (Kuy Jek, JekNgebut, KampusJek, PrintKuy, Bunda Jek, Mitra Jek, dan lainnya). Order-nya tetap lewat WhatsApp provider.
-
-**Apakah harganya dijamin sama dengan yang dibayar?**
-PilihJek menghitung dari price list tiap provider dan **rinciannya ikut terkirim di pesan WA**, jadi tidak ada biaya tersembunyi dari sisi aplikasi. Namun harga bisa berubah sewaktu-waktu (S&K provider berlaku) — kalau ada selisih, itu bisa kamu laporkan lewat tombol masalah dan jadi bahan ulasan.
-
-**Apakah data saya aman?**
-Aplikasi tidak meminta login. Riwayat pesanan dan tempat tersimpan hanya tersimpan **lokal di perangkatmu** (browser). Untuk cetak & antar, file kamu tidak dikirim via chat — hanya link aman sekali pakai yang dibuat.
-
-**Kenapa harus file PDF untuk cetak?**
-Agar hasil cetak rapi dan sama persis seperti yang kamu lihat — dokumen Word/PowerPoint sering berantakan saat dibuka di komputer fotokopian.
-
-**Apakah tersedia di luar area kampus?**
-Saat ini zona yang didukung adalah area kampus dan sekitarnya (Pasar Pagi, Griya Sejahtera, Kost Mutiara Indah, Alun-Alun, dst). Lokasi di luar zona terdekat akan diingatkan agar tidak salah hitung tarif.
-
-**Bagaimana kalau provider ghosting / tidak datang?**
-Laporkan dari halaman pesanan (**"Admin Ghosted Me"** / **"Driver Never Arrived"**). Laporan mengurangi skor keandalan provider dan aplikasi menyarankan provider berikutnya.
+> Besaran setiap cas mengikuti aturan masing-masing jasa — ada yang tidak mengenakan cas hujan, ada pula yang lebih hemat di malam hari. Semua langsung terlihat di hasil perbandingan.
 
 ---
 
-## Status proyek
+## Pertanyaan yang Sering Ditanyakan (FAQ)
 
-Saat ini PilihJek adalah **prototype frontend fungsional**: seluruh data provider, harga, rating, dan riwayat adalah **data mock** di browser, sehingga semua alur bisa dicoba end-to-end tanpa backend. Rencana ke depan: backend sungguhan (login, notifikasi, upload file ke cloud, dan portal agar provider bisa mengupdate price list-nya sendiri agar harga selalu akurat).
+**Apakah PilihJek itu layanan ojek sendiri?**
+Bukan. PilihJek menghubungkan kamu dengan jasa ojek dan antar lokal yang sudah ada di sekitar kampus (seperti Kuy Jek, JekNgebut, KampusJek, PrintKuy, Bunda Jek, Mitra Jek, dan lainnya). Pemesanan tetap berlangsung langsung lewat WhatsApp jasa pilihanmu.
 
----
+**Apakah harga di PilihJek pasti sama dengan yang dibayar?**
+PilihJek menghitung berdasarkan daftar harga tiap jasa, dan **rincian biayanya ikut dikirim ke WhatsApp admin** agar transparan sejak awal. Meski begitu, tarif tetap mengikuti kebijakan masing-masing jasa jika sewaktu-waktu ada pembaruan. Jika terjadi selisih yang tidak wajar, kamu bisa melaporkannya dan memberi ulasan untuk membantu mahasiswa lain.
 
-## Untuk developer
+**Apakah saya harus membuat akun? Bagaimana dengan keamanan data saya?**
+Tidak perlu login atau daftar akun. Riwayat pesanan dan lokasi tersimpan hanya disimpan **di perangkatmu sendiri**. Untuk layanan cetak dokumen, file tidak dikirim lewat chat WhatsApp, melainkan melalui link aman sekali pakai.
 
-Kode aplikasi ada di [`app/`](app/) (Vite + React 19 + TypeScript + Tailwind CSS v4 + Leaflet untuk peta). Semua data mock dan titik swap ke backend nyata dijelaskan di [`FRONTEND_PLAN.md`](FRONTEND_PLAN.md) — titik tukarnya cukup satu modul `src/api`.
+**Kenapa cetak dokumen harus dalam format PDF?**
+Supaya tata letak, font, dan margin dokumenmu tidak berantakan saat dibuka di komputer fotokopian (masalah yang sering terjadi pada file Word atau PowerPoint).
 
-```bash
-cd app
-npm install
-npm run dev      # jalan di http://localhost:5173
-npm run build    # build production ke app/dist
-```
+**Apakah PilihJek bisa dipakai di luar area kampus?**
+Saat ini zona yang didukung mencakup area kampus dan sekitarnya (seperti Pasar Pagi, Griya Sejahtera, Kost Mutiara Indah, Alun-Alun, dll.). Jika lokasimu berada di luar jangkauan zona, aplikasi akan memberi tahu agar tidak terjadi salah hitung tarif.
 
-Struktur singkat:
-
-```
-app/src/
-├── api/          # mock data + price engine + ApiClient interface (swap point ke backend)
-├── pages/        # Beranda, Bandingkan, Cetak & Antar, Provider, Pesanan, Profil
-├── flows/        # wizard komparator, alur cetak, sheet WA, form ulasan
-├── components/   # UI kit + peta (Leaflet)
-└── hooks/ lib/   # state lokal (localStorage), format IDR, generator pesan WA
-```
+**Bagaimana kalau admin tidak membalas (*ghosting*) atau driver tidak datang?**
+Kamu bisa melaporkannya langsung dari halaman **Pesanan** lewat tombol **"Admin Ghosted Me"** atau **"Driver Never Arrived"**. Laporanmu akan membantu menurunkan skor keandalan jasa tersebut dan PilihJek akan langsung menyarankan jasa alternatif.
 
 ---
 
-*Dibuat dengan ❤️ untuk kehidupan kampus — 2026.*
+## Catatan Versi Uji Coba
+
+Saat ini PilihJek masih berada dalam **tahap uji coba (preview)**, sehingga sebagian daftar harga, ulasan, dan profil jasa yang tampil masih menggunakan data simulasi agar kamu bisa mencoba seluruh alur pemesanan. Ke depannya, kami berencana menggandeng langsung jasa-jasa lokal kampus agar daftar harga selalu terbaru dan akurat setiap saat.
+
+---
+
+*Dibuat dengan ❤️ untuk memudahkan kehidupan kampus — 2026.*
